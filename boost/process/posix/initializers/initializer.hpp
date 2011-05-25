@@ -17,11 +17,11 @@ struct executor;
 
 struct initializer 
 {
-    void    pre_fork_parent(Executor&) const {}
-    void   post_fork_parent(Executor&) const {}
-    void failed_fork_parent(Executor&) const {}
-    void   post_fork_child (Executor&) const {}
-    void failed_exec_child (Executor&) const {}
+    void    pre_fork_parent(executor&) const {}
+    void   post_fork_parent(executor&) const {}
+    void failed_fork_parent(executor&) const {}
+    void   post_fork_child (executor&) const {}
+    void failed_exec_child (executor&) const {}
     
     struct lazy
     {

@@ -22,6 +22,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <signal.h>
 
 //////////////////////////////////////////////////////////////////
 #define BOOST_PROCESS_EXECUTOR_METHOD(fnc)                        \

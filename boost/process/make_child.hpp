@@ -18,6 +18,8 @@
 
 namespace boost { namespace process { 
 
+    // I think that the function that takes an initializer sequence should get another name, because otherwise there
+    // would be a run-time error if the caller provided only one initializer.
     template<typename INITIALIZERS> inline child make_child(const INITIALIZERS& izs)
     {
         return executor().exec(izs);
