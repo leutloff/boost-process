@@ -18,11 +18,13 @@
 
 namespace boost { namespace process { 
 
-    // I think that the function that takes an initializer sequence should get another name, because otherwise there
-    // would be a run-time error if the caller provided only one initializer.
-    template<typename INITIALIZERS> inline child make_child(const INITIALIZERS& izs)
+    template<typename A1>
+    inline child make_child(const A1& a1)
     {
-        return executor().exec(izs);
+        using namespace boost::fusion;
+        using boost::cref;
+
+        return executor().exec(make_vector(cref(a1)));
     }
 
     template<typename A1, typename A2> 
