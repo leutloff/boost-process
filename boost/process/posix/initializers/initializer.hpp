@@ -10,6 +10,7 @@
 #define BOOST_PROCESS_POSIX_INITIALIZER_HPP
 
 #include <boost/process/config.hpp>
+#include <boost/process/initializers/initializer_combination_category.hpp>
 
 namespace boost { namespace process { namespace posix {
 
@@ -17,6 +18,10 @@ struct executor;
 
 struct initializer 
 {
+    /// This tells us not to check for conflicts with other initializers in an
+    /// InitializerSequence.
+    typedef initializer_combination::ignore combination_category;
+
     void    pre_fork_parent(executor&) const {}
     void   post_fork_parent(executor&) const {}
     void failed_fork_parent(executor&) const {}
@@ -39,7 +44,7 @@ struct initializer
         
             post_fork_parent(Executor& e) : m_e(e) {}
             
-            template<class I> void operator()(const I& i) const { return i.post_fork_parent(m_e); }
+            template<class I> void operator()(const I& i) const { i.post_fork_parent(m_e); }
         };
         template<class Executor> struct failed_fork_parent
         {
@@ -47,7 +52,7 @@ struct initializer
         
             failed_fork_parent(Executor& e) : m_e(e) {}
             
-            template<class I> void operator()(const I& i) const { return i.failed_fork_parent(m_e); }
+            template<class I> void operator()(const I& i) const { i.failed_fork_parent(m_e); }
         };
         template<class Executor> struct post_fork_child
         {
@@ -55,7 +60,7 @@ struct initializer
         
             post_fork_child(Executor& e) : m_e(e) {}
             
-            template<class I> void operator()(const I& i) const { return i.post_fork_child(m_e); }
+            template<class I> void operator()(const I& i) const { i.post_fork_child(m_e); }
         };
         template<class Executor> struct failed_exec_child
         {
@@ -63,7 +68,7 @@ struct initializer
         
             failed_exec_child(Executor& e) : m_e(e) {}
             
-            template<class I> void operator()(const I& i) const { return i.failed_exec_child(m_e); }
+            template<class I> void operator()(const I& i) const { i.failed_exec_child(m_e); }
         };
     };
 };

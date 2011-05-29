@@ -13,6 +13,10 @@ namespace boost { namespace process { namespace windows {
 
 struct initializer 
 {
+    /// This tells us not to check for conflicts with other initializers in an
+    /// InitializerSequence.
+    typedef initializer_combination::ignore combination_category;
+
     template<class Executor> void    pre_create(Executor&) const {}
     template<class Executor> void   post_create(Executor&) const {}
     template<class Executor> void failed_create(Executor&) const {}

@@ -16,6 +16,9 @@ namespace boost { namespace process { namespace windows {
 
     struct paths : public initializer 
     {
+        // multiple paths initializers cannot be combined in one sequence.
+        typedef initializer_combination::exclusive combination_category;
+
         typedef boost::filesystem::path path;
         
         path m_exe;
