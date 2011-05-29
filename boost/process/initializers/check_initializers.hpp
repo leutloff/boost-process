@@ -99,7 +99,7 @@ namespace boost { namespace process { namespace detail {
 
     };
 
-    /// empty initializer sequences are allright, we're ending recursion.
+    /// empty initializer sequences are all right, we're ending recursion.
     template< typename InitializerSequence>
     struct check_initializers< InitializerSequence, true>
     {

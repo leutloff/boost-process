@@ -22,8 +22,12 @@ namespace boost { namespace process {
     namespace detail
     {
         template< typename InitializerSequence>
-        inline child execute( const InitializerSequence &initializers, typename check_initializers<InitializerSequence>::type * = 0)
+        inline child execute( const InitializerSequence &initializers)
         {
+            // Generate a compiler error if there's an inconsistency in the initializers, for instance
+            // if the sequence contains two paths initializers.
+            typedef typename check_initializers<InitializerSequence>::type initializers_valid;
+
             return executor().exec( initializers);
         }
     }
