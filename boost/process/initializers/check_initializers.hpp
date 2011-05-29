@@ -36,7 +36,7 @@ namespace boost { namespace process { namespace detail {
         template< typename >
         struct apply
         {
-            typedef boost::mpl::true_ type;
+            typedef mpl::true_ type;
         };
     };
 
@@ -56,7 +56,7 @@ namespace boost { namespace process { namespace detail {
                         >::type type;
 
             // It may be a bit weird to assert here, in the middle of the checker, but this allows us to generate more specific
-            // assertions that just 'something is not right with your initializer sequence'.
+            // assertions than just 'something is not right with your initializer sequence'.
 
             // if you get a compilation error here, you have provided two initializers of the same type to make_child, where that
             // doesn't make sense.
@@ -66,7 +66,7 @@ namespace boost { namespace process { namespace detail {
         template< typename InitializerSequence, typename Dummy>
         struct apply<InitializerSequence, true, Dummy>
         {
-            typedef boost::mpl::true_ type;
+            typedef mpl::true_ type;
 
         };
     };
@@ -92,7 +92,7 @@ namespace boost { namespace process { namespace detail {
 
         /// Recurse into the rest of the sequence.
         typedef typename
-                boost::mpl::and_<
+                mpl::and_<
                     HeadResult,
                     typename check_initializers< Tail>::type
                   >::type type;
@@ -103,7 +103,7 @@ namespace boost { namespace process { namespace detail {
     template< typename InitializerSequence>
     struct check_initializers< InitializerSequence, true>
     {
-        typedef boost::mpl::true_ type;
+        typedef mpl::true_ type;
     };
 
 }}} // end namespace boost::process::detail
