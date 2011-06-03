@@ -15,6 +15,7 @@
 #include <boost/filesystem/path.hpp>
 
 #include <vector>
+#include <string>
 
 namespace boost { namespace process { namespace posix {
 
