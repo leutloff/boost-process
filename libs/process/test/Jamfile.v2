@@ -17,7 +17,11 @@ project
 {
   test-suite process_library
     :
+  [ exe child_process : child_process.cpp : <library>/boost/thread//boost_thread ]
   [ compile basic_compile_test.cpp ]
   [ compile-fail double_path_fail.cpp ]
+  [ run basic_run_test.cpp : : : 
+  		<library>/boost/system//boost_system
+  		<library>/boost/filesystem//boost_filesystem  ]
  ;
 }

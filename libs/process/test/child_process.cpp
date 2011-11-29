@@ -6,11 +6,11 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 
 // For more information, see http://www.boost.org
-#include <boost/process/process.hpp>
 
-void f()
+
+#include <boost/thread/thread.hpp>
+
+int main( int argc, char *argv[])
 {
-    using namespace boost::process;
-
-    make_child( paths("a"), paths("b") );
+    boost::this_thread::sleep(boost::posix_time::seconds(10));
 }

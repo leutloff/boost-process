@@ -1,4 +1,4 @@
-// Boost.Explore library
+// Boost.Process library
 
 // Copyright Danny havenith 2011. Use, modification and
 // distribution is subject to the Boost Software License, Version
