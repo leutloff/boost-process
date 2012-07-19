@@ -15,12 +15,30 @@
 #include <boost/fusion/container/generation/make_vector.hpp>
 #include <boost/process/child.hpp>
 #include <boost/process/executor.hpp>
+#include <boost/process/initializers/check_initializers.hpp>
 
 namespace boost { namespace process { 
 
-    template<typename INITIALIZERS> inline child make_child(const INITIALIZERS& izs)
+    namespace detail
     {
-        return executor().exec(izs);
+        template< typename InitializerSequence>
+        inline child execute( const InitializerSequence &initializers)
+        {
+            // Generate a compiler error if there's an inconsistency in the initializers, for instance
+            // if the sequence contains two paths initializers.
+            typedef typename check_initializers<InitializerSequence>::type initializers_valid;
+
+            return executor().exec( initializers);
+        }
+    }
+
+    template<typename A1>
+    inline child make_child(const A1& a1)
+    {
+        using namespace boost::fusion;
+        using boost::cref;
+
+        return detail::execute(make_vector(cref(a1)));
     }
 
     template<typename A1, typename A2> 
@@ -29,7 +47,7 @@ namespace boost { namespace process {
         using namespace boost::fusion;
         using boost::cref;
 
-        return executor().exec(make_vector(cref(a1), cref(a2)));
+        return detail::execute(make_vector(cref(a1), cref(a2)));
     }
 
     template<typename A1, typename A2, typename A3> 
@@ -38,7 +56,7 @@ namespace boost { namespace process {
         using namespace boost::fusion;
         using boost::cref;
     
-        return executor().exec(make_vector(cref(a1), cref(a2), cref(a3)));
+        return detail::execute(make_vector(cref(a1), cref(a2), cref(a3)));
     }
 
     template<typename A1, typename A2, typename A3, typename A4> 
@@ -47,7 +65,7 @@ namespace boost { namespace process {
         using namespace boost::fusion;
         using boost::cref;
 
-        return executor().exec(make_vector(cref(a1), cref(a2), cref(a3), cref(a4)));
+        return detail::execute(make_vector(cref(a1), cref(a2), cref(a3), cref(a4)));
     }
 
     template<typename A1, typename A2, typename A3, typename A4, typename A5> 
@@ -56,7 +74,7 @@ namespace boost { namespace process {
         using namespace boost::fusion;
         using boost::cref;
 
-        return executor().exec(make_vector(cref(a1), cref(a2), cref(a3), cref(a4), cref(a5)));
+        return detail::execute(make_vector(cref(a1), cref(a2), cref(a3), cref(a4), cref(a5)));
     }
 
     template<typename A1, typename A2, typename A3, typename A4, typename A5, typename A6> 
@@ -65,7 +83,7 @@ namespace boost { namespace process {
         using namespace boost::fusion;
         using boost::cref;
 
-        return executor().exec(make_vector(cref(a1), cref(a2), cref(a3), cref(a4), cref(a5), cref(a6)));
+        return detail::execute(make_vector(cref(a1), cref(a2), cref(a3), cref(a4), cref(a5), cref(a6)));
     }
 
     template<typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7> 
@@ -74,7 +92,7 @@ namespace boost { namespace process {
         using namespace boost::fusion;
         using boost::cref;
 
-        return executor().exec(make_vector(cref(a1), cref(a2), cref(a3), cref(a4), cref(a5), cref(a6), cref(a7)));
+        return detail::execute(make_vector(cref(a1), cref(a2), cref(a3), cref(a4), cref(a5), cref(a6), cref(a7)));
     }
 
     template<typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8> 
@@ -83,7 +101,7 @@ namespace boost { namespace process {
         using namespace boost::fusion;
         using boost::cref;
 
-        return executor().exec(make_vector(cref(a1), cref(a2), cref(a3), cref(a4), cref(a5), cref(a6), cref(a7), cref(a8)));
+        return detail::execute(make_vector(cref(a1), cref(a2), cref(a3), cref(a4), cref(a5), cref(a6), cref(a7), cref(a8)));
     }
 
 }}

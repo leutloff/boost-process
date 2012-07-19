@@ -15,11 +15,15 @@
 #include <boost/filesystem/path.hpp>
 
 #include <vector>
+#include <string>
 
 namespace boost { namespace process { namespace posix {
 
     struct paths : public initializer 
     {
+        // multiple paths initializers cannot be combined in one sequence.
+        typedef initializer_combination::exclusive combination_category;
+
         typedef boost::filesystem::path path;
         typedef std::vector<char>       path_chars;
         

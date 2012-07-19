@@ -10,6 +10,7 @@
 #define BOOST_PROCESS_POSIX_FILE_DESCRIPTOR_RAY_HPP
 
 #include <boost/iostreams/device/file_descriptor.hpp>
+#include <fcntl.h>
 
 #include <fcntl.h>
 

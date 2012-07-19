@@ -1,0 +1,27 @@
+# Boost.Process Library
+
+# Copyright Danny Havenith 2011. Use, modification and
+# distribution is subject to the Boost Software License, Version
+# 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# For more information, see http://www.boost.org
+
+# bring in rules for testing
+import testing ;
+
+project
+    : source-location .
+    : requirements
+    ;
+{
+  test-suite process_library
+    :
+  [ exe child_process : child_process.cpp : <library>/boost/thread//boost_thread ]
+  [ compile basic_compile_test.cpp ]
+  [ compile-fail double_path_fail.cpp ]
+  [ run basic_run_test.cpp : : : 
+  		<library>/boost/system//boost_system
+  		<library>/boost/filesystem//boost_filesystem  ]
+ ;
+}
