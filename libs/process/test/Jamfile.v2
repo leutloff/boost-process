@@ -22,6 +22,6 @@ project
   [ compile-fail double_path_fail.cpp ]
   [ run basic_run_test.cpp : : : 
   		<library>/boost/system//boost_system
-  		<library>/boost/filesystem//boost_filesystem  ]
+  		<library>/boost/filesystem/boost_filesystem  ]
  ;
 }
