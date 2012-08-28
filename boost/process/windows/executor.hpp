@@ -12,6 +12,7 @@
 #include <boost/fusion/algorithm/iteration/for_each.hpp>
 
 #include <boost/process/windows/child.hpp>
+#include <boost/process/windows/initializers/initializer.hpp>
 
 #include <windows.h>
 

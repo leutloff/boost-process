@@ -9,6 +9,8 @@
 #ifndef BOOST_PROCESS_WINDOWS_FILE_DESCRIPTOR_RAY_HPP
 #define BOOST_PROCESS_WINDOWS_FILE_DESCRIPTOR_RAY_HPP
 
+#include <boost/asio.hpp>
+#include <boost/system/error_code.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
 
 namespace boost { namespace process { namespace windows {
