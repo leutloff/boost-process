@@ -18,8 +18,7 @@ BOOST_AUTO_TEST_CASE( basic_run )
 {
 
     using namespace boost::process;
-    //monitor m ( make_child( paths("./child_process")));
-    monitor m ( make_child( paths(".\\child_process.exe")));
+    monitor m ( make_child( paths("./child_process")));
     try
     {
         m.join();

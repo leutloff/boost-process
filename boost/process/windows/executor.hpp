@@ -8,7 +8,7 @@
 #ifndef BOOST_PROCESS_WINDOWS_EXECUTOR_HPP
 #define BOOST_PROCESS_WINDOWS_EXECUTOR_HPP
 
-#include <boost/filesystem/path.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/fusion/algorithm/iteration/for_each.hpp>
 
 #include <boost/process/windows/child.hpp>
@@ -57,6 +57,20 @@ namespace boost { namespace process { namespace windows {
         {
             pre_create(izs);
 
+            using boost::filesystem::is_regular_file;
+            if (!is_regular_file(m_exe)) do
+            {
+                m_exe = m_exe.string()+".exe";
+                if (is_regular_file(m_exe))
+                    break;
+                else if (is_regular_file(m_exe.replace_extension(".com")))
+                    break;
+                else if (is_regular_file(m_exe.replace_extension(".bat")))
+                    break;
+                else if (is_regular_file(m_exe.replace_extension(".cmd")))
+                    break;
+            } while (false);
+            
             switch(CreateProcessW
             ( m_exe.wstring().c_str()
             , m_args.ptr()
