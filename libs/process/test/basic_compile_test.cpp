@@ -10,7 +10,7 @@
 #include <boost/process/process.hpp>
 
 
-void f()
+int main()
 {
     using namespace boost::process;
 
