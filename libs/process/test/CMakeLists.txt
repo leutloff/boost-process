@@ -26,6 +26,9 @@ target_link_libraries(basic_compile_test ${Boost_LIBRARIES})
 add_executable(child_process child_process.cpp)
 target_link_libraries(child_process ${Boost_LIBRARIES})
 
+add_executable(child_show_env child_show_env.cpp)
+target_link_libraries(child_show_env ${Boost_LIBRARIES})
+
 add_executable(basic_run_test basic_run_test.cpp)
 target_link_libraries(basic_run_test ${Boost_LIBRARIES})
 
