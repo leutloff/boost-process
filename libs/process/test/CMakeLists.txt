@@ -32,6 +32,8 @@ target_link_libraries(child_show_env ${Boost_LIBRARIES})
 add_executable(basic_run_test basic_run_test.cpp)
 target_link_libraries(basic_run_test ${Boost_LIBRARIES})
 
+add_executable(environment_test environment_test.cpp)
+target_link_libraries(environment_test ${Boost_LIBRARIES})
 
 # fail to compile:
 #add_executable(double_path_fail double_path_fail.cpp)
