@@ -17,6 +17,8 @@
 #elif defined(BOOST_WINDOWS_API)
 #   define BOOST_PROCESS_PLATFORM windows
 #   define fileno _fileno
+// load winsock2 early to avoid error "WinSock.h has already been included" from boost/asio/detail/socket_types.hpp
+#   include <winsock2.h>
 #endif
 
 #define BOOST_PROCESS_PLATFORM_PROMOTE_PATH(COMPONENT)             <boost/process/BOOST_PROCESS_PLATFORM/COMPONENT.hpp>

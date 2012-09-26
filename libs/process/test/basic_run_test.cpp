@@ -22,8 +22,19 @@ namespace fs = boost::filesystem;
 /// This does not test anything yet.
 BOOST_AUTO_TEST_CASE( basic_run )
 {
+    std::string CHILD_NAME = "child_process";
     // check that application to launch exists
-    fs::path child_process =  "./child_process";
+#ifdef BOOST_WINDOWS_API
+    // get the name of this unit test DLL and use this path to reference the child exe
+    // Reason: The unit test is executed in libs\process\test, but the DLL and the child_process are located in libs\process\test\Debug.
+    char path[2048];
+    GetModuleFileNameA(NULL, path, 2048); 
+    fs::path dll_path(path);
+    fs::path child_process = dll_path.parent_path() / CHILD_NAME;
+    child_process.replace_extension(".exe");
+#else
+    fs::path child_process =  "./" + CHILD_NAME;
+#endif
     BOOST_CHECK_EQUAL(true, fs::exists(child_process));
 
     using namespace boost::process;
