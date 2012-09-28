@@ -89,6 +89,8 @@ namespace boost { namespace process { namespace posix {
 
     struct std_out_to : io_initializer
     {
+        typedef initializer_combination::exclusive combination_category;
+
         std_out_to(const           sink_type& s) : io_initializer(), m_sink(s       ) {}
         std_out_to(const file_descriptor_ray& r) : io_initializer(), m_sink(r.m_sink) {}
 
