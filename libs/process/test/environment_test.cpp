@@ -8,7 +8,6 @@
 //
 
 #define BOOST_TEST_MODULE ProcessLib
-#include <iostream>
 
 // Linux requires dynamic linkage of Boost.Test
 #define BOOST_TEST_DYN_LINK
@@ -18,6 +17,9 @@
 #include <boost/iostreams/stream.hpp>
 #include <boost/process/process.hpp>
 #include <boost/filesystem.hpp>
+
+#include <iostream>
+#include <sstream>
 
 namespace bio = boost::iostreams;
 namespace bp = boost::process;
@@ -39,20 +41,25 @@ BOOST_AUTO_TEST_CASE(prepare_arguments)
         BOOST_CHECK_EQUAL(t, "arg1");
     }
 
-    // the following tests are failing, because std::copy is used, TODO use boost::join instead
     {
         bp::args t = bp::args("arg1")("arg2");
-        BOOST_CHECK_EQUAL(t, "arg1 arg2");
+        std::ostringstream oss;
+        oss << t;
+        BOOST_CHECK_EQUAL(oss.str(), "arg1 arg2");
     }
 
     {
         bp::args t = bp::args("arg1")("arg2 ")("arg3");
-        BOOST_CHECK_EQUAL(t, "arg1 arg2  arg3");
+        std::ostringstream oss;
+        oss << t;
+        BOOST_CHECK_EQUAL(oss.str(), "arg1 arg2  arg3");
     }
 
     {
         bp::args t = bp::args("arg1")("arg2")("arg3")("arg4")("arg5")("arg6")("arg7")("arg8");
-        BOOST_CHECK_EQUAL(t, "arg1 arg2 arg3 arg4 arg5 arg6 arg7 arg8");
+        std::ostringstream oss;
+        oss << t;
+        BOOST_CHECK_EQUAL(oss.str(), "arg1 arg2 arg3 arg4 arg5 arg6 arg7 arg8");
     }
 }
 
@@ -63,6 +70,8 @@ BOOST_AUTO_TEST_CASE(prepare_environment_variables)
 
 BOOST_AUTO_TEST_CASE(set_environment_variables)
 {
+    // using boost::test_tools::output_test_stream;
+
     //    // check that application to launch exists
     //    fs::path child_process =  "./child_process";
     //    BOOST_CHECK_EQUAL(true, fs::exists(child_process));

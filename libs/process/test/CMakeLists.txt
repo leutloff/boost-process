@@ -38,7 +38,7 @@ target_link_libraries(environment_test ${Boost_LIBRARIES})
 # fail to compile:
 #add_executable(double_path_fail double_path_fail.cpp)
 
-
+#add_definitions("-g")
 
 #include(Ryppl)
 #include(RypplTestSuite)
