@@ -8,7 +8,7 @@ if(EXISTS "${PROJECT_SOURCE_DIR}/../boost_1_48_0")
     message("setting BOOST_ROOT to: ${BOOST_ROOT}")
 endif()
 
-find_package(Boost COMPONENTS filesystem thread date_time system unit_test_framework REQUIRED)
+find_package(Boost COMPONENTS filesystem thread iostreams date_time system unit_test_framework REQUIRED)
 
 include_directories(
     .

@@ -12,11 +12,14 @@
 // Linux requires dynamic linkage of Boost.Test
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
+#include <boost/test/output_test_stream.hpp>
 
 #include <boost/iostreams/tee.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/process/process.hpp>
+#include <boost/process/file_descriptor_ray.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/tuple/tuple.hpp>
 
 #include <iostream>
 #include <sstream>
@@ -67,25 +70,32 @@ BOOST_AUTO_TEST_CASE(prepare_environment_variables)
 {
 }
 
-
 BOOST_AUTO_TEST_CASE(set_environment_variables)
-{
-    // using boost::test_tools::output_test_stream;
+{   
+    // check that application to launch exists - if this test fails, check the working directory,
+    // e.g. Qt Creator: Click on Projects, select tab Run Settings and change the Working Directory to the dir with the executables.
+    fs::path child_process = "./child_show_env";
+    //std::cout << "child_process: " << child_process << std::endl;
+    BOOST_CHECK_EQUAL(true, fs::exists(child_process));
 
-    //    // check that application to launch exists
-    //    fs::path child_process =  "./child_process";
-    //    BOOST_CHECK_EQUAL(true, fs::exists(child_process));
+    try
+    {
+        typedef bio::stream<bio::file_descriptor_source> source;
+        bp::file_descriptor_ray ray;
+        bp::monitor m(bp::make_child(bp::paths(child_process), bp::std_out_to(ray)));
+        ray.m_sink.close(); // currently req's manual closing
+        //source redirected(ray.m_source);
+        //boost::tuples::tuple version(bio::parse(redirected)); // parse the istream
+        // std::cout << &redirected << std::endl;
+        bio::stream_buffer<bio::file_descriptor_source> pstream(ray.m_source);
+        std::cout << &pstream << std::endl;
 
-    //    using namespace boost::process;
-    //    monitor m ( make_child( paths(child_process)));
-    //    try
-    //    {
-    //        m.join();
-    //    }
-    //    catch (...)
-    //    {
-    //        std::cout << "something went wrong\n";
-    //        BOOST_CHECK_MESSAGE( false, "an exception was thrown");
-    //    }
+        m.join();
+    }
+    catch (...)
+    {
+        std::cout << "something went wrong\n";
+        BOOST_CHECK_MESSAGE( false, "an exception was thrown");
+    }
 }
 
