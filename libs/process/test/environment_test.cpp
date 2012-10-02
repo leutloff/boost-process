@@ -28,7 +28,7 @@ namespace bio = boost::iostreams;
 namespace bp = boost::process;
 namespace fs = boost::filesystem;
 
-// TODO move to own file
+// TODO move to own file?
 BOOST_AUTO_TEST_CASE(prepare_arguments)
 {
     {
@@ -68,6 +68,64 @@ BOOST_AUTO_TEST_CASE(prepare_arguments)
 
 BOOST_AUTO_TEST_CASE(prepare_environment_variables)
 {
+    {
+        bp::env t("env1", "val1");
+        std::ostringstream oss;
+        oss << t;
+        BOOST_CHECK_EQUAL(oss.str(), "env1=val1");
+    }
+    {
+        bp::environment t(bp::env("env1", "val1"));
+        std::ostringstream oss;
+        oss << t;
+        BOOST_CHECK_EQUAL(oss.str(), "env1=val1");
+    }
+       {
+        bp::environment t(bp::env(std::string("env1=6")));
+        std::ostringstream oss;
+        oss << t;
+        BOOST_CHECK_EQUAL(oss.str(), "env1=6");
+    }
+    {
+        bp::environment t = bp::env("env1", "val1");
+        std::ostringstream oss;
+        oss << t;
+        BOOST_CHECK_EQUAL(oss.str(), "env1=val1");
+    }
+
+    {
+        bp::environment t = bp::environment("env1=val1")("env2=val2");
+        std::ostringstream oss;
+        oss << t;
+        BOOST_CHECK_EQUAL(oss.str(), "env1=val1\nenv2=val2");
+    }
+    {
+        bp::environment t = bp::environment("env1", "val1")("env2", "val2");
+        std::ostringstream oss;
+        oss << t;
+        BOOST_CHECK_EQUAL(oss.str(), "env1=val1\nenv2=val2");
+    }
+
+    {
+        bp::environment t = bp::environment("env1", "val1")("env2", "val2")("env3", "val3");
+        std::ostringstream oss;
+        oss << t;
+        BOOST_CHECK_EQUAL(oss.str(), "env1=val1\nenv2=val2\nenv3=val3");
+    }
+
+    {
+        bp::environment t = bp::environment("env1", "val1")("env2", "val2")("env3", "val3")("env4", "val4")("env5", "val5")("env6", "val6")("env7", "val7")("env8", "val8");
+        std::ostringstream oss;
+        oss << t;
+        BOOST_CHECK_EQUAL(oss.str(), "env1=val1\nenv2=val2\nenv3=val3\nenv4=val4\nenv5=val5\nenv6=val6\nenv7=val7\nenv8=val8");
+    }
+
+    {
+        bp::environment t = bp::environment("env1", "val1")("env2", "val2")("env3=val3")("env4=val4")("env5", "val5")("env6", "val6")("env7", "val7")("env8", "val8");
+        std::ostringstream oss;
+        oss << t;
+        BOOST_CHECK_EQUAL(oss.str(), "env1=val1\nenv2=val2\nenv3=val3\nenv4=val4\nenv5=val5\nenv6=val6\nenv7=val7\nenv8=val8");
+    }
 }
 
 BOOST_AUTO_TEST_CASE(set_environment_variables)
