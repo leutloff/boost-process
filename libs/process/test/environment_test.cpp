@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(prepare_environment_variables)
         oss << t;
         BOOST_CHECK_EQUAL(oss.str(), "env1=val1");
     }
-       {
+    {
         bp::environment t(bp::env(std::string("env1=6")));
         std::ostringstream oss;
         oss << t;
@@ -127,6 +127,48 @@ BOOST_AUTO_TEST_CASE(prepare_environment_variables)
         BOOST_CHECK_EQUAL(oss.str(), "env1=val1\nenv2=val2\nenv3=val3\nenv4=val4\nenv5=val5\nenv6=val6\nenv7=val7\nenv8=val8");
     }
 }
+
+void check_equal(bp::environment const& e, std::string const& expected)
+{
+    std::ostringstream oss;
+    oss << e;
+    std::string s = oss.str();
+    BOOST_CHECK_MESSAGE(s == expected, s + " != (expected:) " + expected);
+}
+
+void check_contains(bp::environment const& e, std::string const& contains)
+{
+    std::ostringstream oss;
+    oss << e;
+    std::string s = oss.str();
+    BOOST_CHECK_MESSAGE(std::string::npos != s.find(contains), s + " != (expected:) " + contains);
+}
+
+BOOST_AUTO_TEST_CASE(clean_or_derived_environment)
+{
+    {
+        bp::environment t = bp::environment(bp::posix::derive_environment())("env1", "val1")("env2", "val2")("env3", "val3");
+        check_contains(t, "env1=val1\nenv2=val2\nenv3=val3");
+        // check for common environment variables on Posix and Windows systems
+        check_contains(t, "\nPATH=");
+        check_contains(t, "\nHOME=");
+    }
+    {
+        bp::environment t = bp::environment(bp::derive_environment())("env1", "val1")("env2", "val2")("env3", "val3");
+        check_contains(t, "env1=val1\nenv2=val2\nenv3=val3");
+        check_contains(t, "\nPATH=");
+        check_contains(t, "\nHOME=");
+    }
+    {
+        bp::environment t = bp::environment(bp::clean_environment())("env1", "val1")("env2", "val2")("env3", "val3");
+        check_equal(t, "env1=val1\nenv2=val2\nenv3=val3");
+    }
+    {
+        bp::environment t = bp::environment(bp::clean_environment())("env3", "val3")("env2", "val2")("env1", "val1");
+        check_equal(t, "env1=val1\nenv2=val2\nenv3=val3");
+    }
+}
+
 
 BOOST_AUTO_TEST_CASE(set_environment_variables)
 {   

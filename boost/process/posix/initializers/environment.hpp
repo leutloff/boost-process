@@ -1,7 +1,12 @@
 
 // 
+// Copyright (c) 2006, 2007 Julio M. Merino Vidal
+// Copyright (c) 2008 Ilya Sokolov, Boris Schaeling
+// Copyright (c) 2009 Boris Schaeling
+// Copyright (c) 2010 Felipe Tanus, Boris Schaeling
 // Copyright (c) 2011 Jeff Flinn
-// 
+// Copyright (c) 2012 Christian Leutloff
+//
 // Distributed under the Boost Software License, Version 1.0. (See accompanying 
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt) 
 // 
@@ -54,10 +59,10 @@ namespace boost { namespace process { namespace posix {
                                               ,const std::string& value) : m_namevalue(name, value) {}
                                            env(const std::string& name
                                               ,const        path& p) : m_namevalue(name, p.string()) {}
-        template<class Executor> void  pre_fork_parent(Executor& e) const
-        {
-            //TODO e.m_env_vars_ptrs.push_back(&m_namevalue);
-        }
+//        template<class Executor> void  pre_fork_parent(Executor& e) const
+//        {
+//            //TODO e.m_env_vars_ptrs.push_back(&m_namevalue);
+//        }
 
         bool operator==(const env& rhs) const
         {
@@ -73,7 +78,11 @@ namespace boost { namespace process { namespace posix {
         return os;
     }
 
+    /// start with a clean environment and avoid the initialization with the environment variables of the parent process.
+    struct clean_environment {};
 
+    /// initializate the environment variables with the values of the parent process.
+    struct derive_environment {};
 
     struct environment : public initializer 
     {
@@ -99,10 +108,22 @@ namespace boost { namespace process { namespace posix {
 
         environment_type m_environment;
 
-        environment() : m_environment() {}
-        template<typename T>               environment(const T& namevalue) : m_environment() { add(env(namevalue)); }
+        environment()                   : m_environment() { initialize_environment(); }
+        environment(derive_environment) : m_environment() { initialize_environment(); }
+        environment(clean_environment)  : m_environment() { }
+        template<typename T>               environment(const T& namevalue)              : m_environment() { add(env(namevalue)); }
         template<typename T1, typename T2> environment(const T1& name, const T2& value) : m_environment() { add(env(name, value)); }
 
+        environment& operator()(derive_environment)
+        {
+            initialize_environment();
+            return *this;
+        }
+        environment& operator()(clean_environment)
+        {
+            m_environment.clear();
+            return *this;
+        }
         environment& operator()(const env& e)
         {
             add(e);
@@ -128,24 +149,71 @@ namespace boost { namespace process { namespace posix {
             }
         }
 
+        void initialize_environment()
+        {
+#if defined(__APPLE__)
+            char **ppenv = *_NSGetEnviron();
+#else
+            char **ppenv = environ;
+#endif
+            while (*ppenv)
+            {
+                std::string namevalue = *ppenv;
+                add(env(namevalue));
+                ++ppenv;
+            }
+        }
+
         bool operator==(const environment& rhs) const
         {
             return m_environment == rhs.m_environment;
         }
 
 
-		template<class Executor> void pre_create(Executor& e) const
+        /**
+         * Converts an environment to a char** table as used by execve().
+         *
+         * Converts the environment's contents to the format used by the
+         * execve() system call. The returned char** array is allocated
+         * in dynamic memory; the caller must free it when not used any
+         * more. Each entry is also allocated in dynamic memory and is a
+         * NULL-terminated string of the form var=value; these must also be
+         * released by the caller.
+         *
+         * \return A NULL-terminated, dynamically allocated
+         *         array of dynamically allocated strings representing the
+         *         enviroment's content. Each array entry is a NULL-terminated
+         *         string of the form var=value. The caller is responsible for
+         *         freeing them.
+         */
+        inline char** environment_to_envp()
+        {
+            char **envp = new char*[m_environment.size() + 1];
+            environment_type::size_type i = 0;
+            for (environment_type::const_iterator it = m_environment.begin(); it != m_environment.end(); ++it)
+            {
+                std::string s = it->first + "=" + it->second;
+                envp[i] = new char[s.size() + 1];
+                std::strncpy(envp[i], s.c_str(), s.size() + 1);
+                ++i;
+            }
+            envp[i] = 0;
+            return envp;
+        }
+
+        template<class Executor> void pre_create(Executor& e) const
 		{
             // TODO
-#			if defined(__APPLE__)
+//#			if defined(__APPLE__)
 			
-				e.m_env_vars_ptrs = *_NSGetEnviron();
+//				e.m_env_vars_ptrs = *_NSGetEnviron();
 			
-#			else
+//#			else
 						
-				e.m_env_vars_ptrs = environ;
+//				e.m_env_vars_ptrs = environ;
 			
-#			endif
+//#			endif
+            e.m_env_vars_ptrs = environment_to_envp();
 		}
 
         friend std::ostream& operator<<(std::ostream&, const environment&);
