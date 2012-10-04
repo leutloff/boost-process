@@ -20,6 +20,43 @@ link_directories(
     "${BOOST_LIBRARYDIR}"
     )
 
+if(MSVC)
+    add_definitions("-D_SCL_SECURE_NO_WARNINGS")
+    add_definitions("-D_CRT_SECURE_NO_DEPRECATE")
+
+#boost_filesystem-vc100-mt-gd-1_48.dll
+    # Execute the INSTALL project to copy the required boost libs to the Debug and Release directories.
+
+    get_filename_component(FS_BASE_NAME_REL ${Boost_FILESYSTEM_LIBRARY_RELEASE} NAME_WE)
+    get_filename_component(FS_BASE_NAME_DBG ${Boost_FILESYSTEM_LIBRARY_DEBUG} NAME_WE)
+    get_filename_component(THRD_BASE_NAME_REL ${Boost_THREAD_LIBRARY_RELEASE} NAME_WE)
+    get_filename_component(THRD_BASE_NAME_DBG ${Boost_THREAD_LIBRARY_DEBUG} NAME_WE)
+    get_filename_component(DT_BASE_NAME_REL ${Boost_DATE_TIME_LIBRARY_RELEASE} NAME_WE)
+    get_filename_component(DT_BASE_NAME_DBG ${Boost_DATE_TIME_LIBRARY_DEBUG} NAME_WE)
+    get_filename_component(SYS_BASE_NAME_REL ${Boost_SYSTEM_LIBRARY_RELEASE} NAME_WE)
+    get_filename_component(SYS_BASE_NAME_DBG ${Boost_SYSTEM_LIBRARY_DEBUG} NAME_WE)
+    get_filename_component(UTF_BASE_NAME_REL ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE} NAME_WE)
+    get_filename_component(UTF_BASE_NAME_DBG ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG} NAME_WE)
+
+    install(FILES ${BOOST_LIBRARYDIR}/${FS_BASE_NAME_DBG}.dll
+                  ${BOOST_LIBRARYDIR}/${THRD_BASE_NAME_DBG}.dll
+                  ${BOOST_LIBRARYDIR}/${DT_BASE_NAME_DBG}.dll
+                  ${BOOST_LIBRARYDIR}/${SYS_BASE_NAME_DBG}.dll
+                  ${BOOST_LIBRARYDIR}/${UTF_BASE_NAME_DBG}.dll
+        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug
+        CONFIGURATIONS Debug
+    )
+    install(FILES ${BOOST_LIBRARYDIR}/${FS_BASE_NAME_REL}.dll
+                  ${BOOST_LIBRARYDIR}/${THRD_BASE_NAME_REL}.dll
+                  ${BOOST_LIBRARYDIR}/${DT_BASE_NAME_REL}.dll
+                  ${BOOST_LIBRARYDIR}/${SYS_BASE_NAME_REL}.dll
+                  ${BOOST_LIBRARYDIR}/${UTF_BASE_NAME_REL}.dll
+        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Release
+        CONFIGURATIONS Release RelWithDebInfo
+    )
+    
+endif()
+    
 add_executable(basic_compile_test basic_compile_test.cpp)
 target_link_libraries(basic_compile_test ${Boost_LIBRARIES})
 

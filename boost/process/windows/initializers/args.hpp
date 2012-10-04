@@ -60,7 +60,7 @@ namespace boost { namespace process { namespace windows {
     inline std::ostream& operator<< (std::ostream& os, const arg& a)
     {
         typedef boost:: u16_to_u32_iterator<std::wstring::const_iterator> u32_from_u16_iterator;
-        typedef boost::utf8_output_iterator<std::ostream_iterator<char> >  utf8_output_iterator;
+        typedef boost::utf8_output_iterator<std::ostream_iterator<char> > utf8_output_iterator;
 
         std::copy(u32_from_u16_iterator(a.m_arg.begin()), u32_from_u16_iterator(a.m_arg.end()), utf8_output_iterator(os));
 
@@ -112,7 +112,5 @@ namespace boost { namespace process { namespace windows {
 	}
 
 }}}
-
-
 
 #endif // BOOST_PROCESS_WINDOWS_INITIALIZER_ARGS_HPP
