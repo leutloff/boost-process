@@ -106,7 +106,19 @@ namespace boost { namespace process { namespace windows {
 
 	inline std::ostream& operator<< (std::ostream& os, const args& a)
 	{
-		std::copy(a.m_args.begin(), a.m_args.end(), std::ostream_iterator<arg>(os, " "));
+		//std::copy(a.m_args.begin(), a.m_args.end(), std::ostream_iterator<arg>(os, " "));
+        // this strategy ommits the trailing space:
+        args::args_type::const_iterator itBegin = a.m_args.begin();
+        args::args_type::const_iterator itEnd = a.m_args.end();
+        if(itBegin != itEnd)
+        {
+            os << *itBegin;
+            ++itBegin;
+        }
+        for(; itBegin != itEnd; ++itBegin)
+        {
+            os << " " << *itBegin;
+        }
 
 		return os;
 	}
