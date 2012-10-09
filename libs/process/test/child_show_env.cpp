@@ -9,6 +9,9 @@
 //
 
 #include <boost/process/config.hpp>
+#include <boost/system/error_code.hpp> 
+#include <boost/system/system_error.hpp>
+#include <boost/throw_exception.hpp>
 
 #if defined(BOOST_POSIX_API)
 #   include <stdlib.h>
@@ -55,8 +58,10 @@ int main(int argc, char *argv[])
 
     char *ms_environ = GetEnvironmentStrings();
     if (!ms_environ)
-        BOOST_PROCESS_THROW_LAST_SYSTEM_ERROR(
-                    "GetEnvironmentStrings() failed");
+    {
+        boost::throw_exception(boost::system::system_error(boost::system::error_code(GetLastError(), boost::system::get_system_category()),
+                   "GetEnvironmentStrings() failed"));
+    }
     try
     {
         char *env = ms_environ;
