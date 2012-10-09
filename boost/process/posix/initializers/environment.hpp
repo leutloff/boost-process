@@ -203,7 +203,7 @@ namespace boost { namespace process { namespace posix {
 
         template<class Executor> void pre_create(Executor& e) const
 		{
-            // TODO
+            // TODO - remove the initial implementation
 //#			if defined(__APPLE__)
 			
 //				e.m_env_vars_ptrs = *_NSGetEnviron();
