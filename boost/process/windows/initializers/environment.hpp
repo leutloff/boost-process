@@ -106,14 +106,14 @@ namespace boost { namespace process { namespace windows {
         environment_type m_environment;
 
         environment()                   : m_environment(), m_env(GetEnvironmentStrings()) { initialize_environment(); }
-        environment(derive_environment) : m_environment() { initialize_environment(); }
-        environment(clean_environment)  : m_environment() { }
-        template<typename T>               environment(const T& namevalue)              : m_environment() { add(env(namevalue)); }
-        template<typename T1, typename T2> environment(const T1& name, const T2& value) : m_environment() { add(env(name, value)); }
+        environment(derive_environment) : m_environment(), m_env(GetEnvironmentStrings()) { initialize_environment(); }
+        environment(clean_environment)  : m_environment(), m_env(NULL) { }
+        template<typename T>               environment(const T& namevalue)              : m_environment(), m_env(NULL) { add(env(namevalue)); }
+        template<typename T1, typename T2> environment(const T1& name, const T2& value) : m_environment(), m_env(NULL) { add(env(name, value)); }
 
         ~environment()
         {
-            FreeEnvironmentStringsW(LPWCH(m_env));
+            if (NULL != m_env) { FreeEnvironmentStringsW(LPWCH(m_env)); }
         }
 
         environment& operator()(derive_environment)
