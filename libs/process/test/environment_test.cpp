@@ -28,6 +28,7 @@ namespace bio = boost::iostreams;
 namespace bp = boost::process;
 namespace fs = boost::filesystem;
 
+
 // TODO move to own file?
 BOOST_AUTO_TEST_CASE(prepare_arguments)
 {
@@ -44,6 +45,8 @@ BOOST_AUTO_TEST_CASE(prepare_arguments)
         BOOST_CHECK_EQUAL(t, "arg1");
     }
 
+#if defined(BOOST_POSIX_API)
+    // can use unquoted arguments - TODO: is this difference between POSIX and WINDOWS intentional?
     {
         bp::args t = bp::args("arg1")("arg2");
         std::ostringstream oss;
@@ -64,6 +67,31 @@ BOOST_AUTO_TEST_CASE(prepare_arguments)
         oss << t;
         BOOST_CHECK_EQUAL(oss.str(), "arg1 arg2 arg3 arg4 arg5 arg6 arg7 arg8");
     }
+#elif defined(BOOST_WINDOWS_API)
+    // uses quoted arguments
+    {
+        bp::args t = bp::args("arg1")("arg2");
+        std::ostringstream oss;
+        oss << t;
+        BOOST_CHECK_EQUAL(oss.str(), "\"arg1\" \"arg2\"");
+    }
+
+    {
+        bp::args t = bp::args("arg1")("arg2 ")("arg3");
+        std::ostringstream oss;
+        oss << t;
+        BOOST_CHECK_EQUAL(oss.str(), "\"arg1\" \"arg2 \" \"arg3\"");
+    }
+
+    {
+        bp::args t = bp::args("arg1")("arg2")("arg3")("arg4")("arg5")("arg6")("arg7")("arg8");
+        std::ostringstream oss;
+        oss << t;
+        BOOST_CHECK_EQUAL(oss.str(), "\"arg1\" \"arg2\" \"arg3\" \"arg4\" \"arg5\" \"arg6\" \"arg7\" \"arg8\"");
+    }
+#else
+#   error "Unsupported platform."
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(prepare_environment_variables)
@@ -147,17 +175,27 @@ void check_contains(bp::environment const& e, std::string const& contains)
 BOOST_AUTO_TEST_CASE(clean_or_derived_environment)
 {
     {
-        bp::environment t = bp::environment(bp::posix::derive_environment())("env1", "val1")("env2", "val2")("env3", "val3");
+        bp::environment t = bp::environment(bp::derive_environment())("env1", "val1")("env2", "val2")("env3", "val3");
         check_contains(t, "env1=val1\nenv2=val2\nenv3=val3");
         // check for common environment variables on Posix and Windows systems
         check_contains(t, "\nPATH=");
+#if defined(BOOST_POSIX_API)
         check_contains(t, "\nHOME=");
+#elif defined(BOOST_WINDOWS_API)
+        check_contains(t, "\nUSERNAME=");
+#else
+#   error "Unsupported platform."
+#endif
     }
     {
         bp::environment t = bp::environment(bp::derive_environment())("env1", "val1")("env2", "val2")("env3", "val3");
         check_contains(t, "env1=val1\nenv2=val2\nenv3=val3");
         check_contains(t, "\nPATH=");
+#if defined(BOOST_POSIX_API)
         check_contains(t, "\nHOME=");
+#elif defined(BOOST_WINDOWS_API)
+        check_contains(t, "\nUSERNAME=");
+#endif
     }
     {
         bp::environment t = bp::environment(bp::clean_environment())("env1", "val1")("env2", "val2")("env3", "val3");
@@ -174,7 +212,12 @@ BOOST_AUTO_TEST_CASE(set_environment_variables)
 {   
     // check that application to launch exists - if this test fails, check the working directory,
     // e.g. Qt Creator: Click on Projects, select tab Run Settings and change the Working Directory to the dir with the executables.
+    // or Visual Studio: Open the Project Properties, select Debugging and change the Working Directory from $(ProjectDir) to $(OutDir).
+#if defined(BOOST_POSIX_API)
     fs::path child_process = "./child_show_env";
+#elif defined(BOOST_WINDOWS_API)
+    fs::path child_process = "child_show_env.exe";
+#endif
     //std::cout << "child_process: " << child_process << std::endl;
     BOOST_CHECK_EQUAL(true, fs::exists(child_process));
 
@@ -192,10 +235,17 @@ BOOST_AUTO_TEST_CASE(set_environment_variables)
 
         m.join();
     }
+    catch (std::exception const& ex)
+    {
+        std::ostringstream oss;
+        oss << "something went wrong: " << ex.what();
+        std::cout << oss.str() << std::endl;
+        BOOST_CHECK_MESSAGE(false,  oss.str());
+    }
     catch (...)
     {
         std::cout << "something went wrong\n";
-        BOOST_CHECK_MESSAGE( false, "an exception was thrown");
+        BOOST_CHECK_MESSAGE(false, "an exception was thrown");
     }
 }
 
