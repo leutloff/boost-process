@@ -169,7 +169,19 @@ void check_contains(bp::environment const& e, std::string const& contains)
     std::ostringstream oss;
     oss << e;
     std::string s = oss.str();
-    BOOST_CHECK_MESSAGE(std::string::npos != s.find(contains), s + " != (expected:) " + contains);
+    BOOST_CHECK_MESSAGE(std::string::npos != s.find(contains), s + " does not contain " + contains);
+}
+
+void check_contains(std::string const& complete, std::string const& contains)
+{
+    BOOST_CHECK_MESSAGE(std::string::npos != complete.find(contains), complete + " does not contain " + contains);
+}
+
+void check_contains(std::wstring const& wscomplete, std::wstring const& wscontains)
+{
+    std::string complete(wscomplete.begin(), wscomplete.end()); 
+    std::string contains(wscontains.begin(), wscontains.end()); 
+    BOOST_CHECK_MESSAGE(std::wstring::npos != wscomplete.find(wscontains), complete + " does not contain " + contains);
 }
 
 BOOST_AUTO_TEST_CASE(clean_or_derived_environment)
@@ -248,4 +260,71 @@ BOOST_AUTO_TEST_CASE(set_environment_variables)
         BOOST_CHECK_MESSAGE(false, "an exception was thrown");
     }
 }
+
+#if defined(BOOST_WINDOWS_API)
+
+BOOST_AUTO_TEST_CASE(some_win32_tests)
+{   
+    //
+    // Create the environment block for the child process. We start with the environment
+    // of this process, and then merge environment variables from the server description.
+    // Since Windows is case insensitive wrt environment variables we convert the keys to
+    // uppercase to ensure matches are found.
+    //
+    const wchar_t* env = NULL;
+    typedef  std::map<std::wstring, std::wstring, bp::environment::case_insensitve_sort> environmentmap_type;
+    environmentmap_type   envMap;
+    LPVOID parentEnv = GetEnvironmentStringsW();
+    const wchar_t* var = reinterpret_cast<const wchar_t*>(parentEnv);
+    if(*var == L'=')
+    {
+        //
+        // The environment block may start with some information about the
+        // current drive and working directory. This is indicated by a leading
+        // '=' character, so we skip to the first '\0' byte.
+        //
+        while(*var != L'\0')
+            var++;
+        var++;
+    }
+    while(*var != L'\0')
+    {
+        std::wstring s(var);
+        std::wstring::size_type pos = s.find(L'=');
+        if (std::wstring::npos != pos)
+        {
+            envMap[s.substr(0, pos)] = s.substr(pos + 1);
+        }
+        var += s.size();
+        var++; // Skip the '\0' byte
+    }
+    FreeEnvironmentStringsW(static_cast<wchar_t*>(parentEnv));
+    //for(p = envs.begin(); p != envs.end(); ++p)
+    //{
+    //    std::wstring s = IceUtil::stringToWstring(*p);
+    //    wstring::size_type pos = s.find(L'=');
+    //    if(pos != wstring::npos)
+    //    {
+    //        envMap[s.substr(0, pos)] = s.substr(pos + 1);
+    //    }
+    //}
+
+    std::wstring envbuf;
+    for(environmentmap_type::const_iterator q = envMap.begin(); q != envMap.end(); ++q)
+    {
+        envbuf.append(q->first);
+        envbuf.push_back(L'=');
+        envbuf.append(q->second);
+        envbuf.push_back(L'\0');
+    }
+    envbuf.push_back(L'\0');
+    env = envbuf.c_str();
+
+    check_contains(envbuf, L"PATH=");
+    check_contains(envbuf, L"USERNAME=");
+    //check_contains(envbuf, L"ALLUSER");
+
+}
+
+#endif
 
