@@ -299,15 +299,6 @@ BOOST_AUTO_TEST_CASE(some_win32_tests)
         var++; // Skip the '\0' byte
     }
     FreeEnvironmentStringsW(static_cast<wchar_t*>(parentEnv));
-    //for(p = envs.begin(); p != envs.end(); ++p)
-    //{
-    //    std::wstring s = IceUtil::stringToWstring(*p);
-    //    wstring::size_type pos = s.find(L'=');
-    //    if(pos != wstring::npos)
-    //    {
-    //        envMap[s.substr(0, pos)] = s.substr(pos + 1);
-    //    }
-    //}
 
     std::wstring envbuf;
     for(environmentmap_type::const_iterator q = envMap.begin(); q != envMap.end(); ++q)

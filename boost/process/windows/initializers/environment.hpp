@@ -193,11 +193,7 @@ namespace boost { namespace process { namespace windows {
 
         void initialize_environment()
         {
-#   ifdef GetEnvironmentStrings
-#   undef GetEnvironmentStrings
-#   endif
-
-            char *environ = GetEnvironmentStringsA();
+            wchar_t *environ = GetEnvironmentStringsW();
             if (!environ)
             {
                 boost::throw_exception(boost::system::system_error(boost::system::error_code(GetLastError(), boost::system::get_system_category()),
@@ -205,20 +201,20 @@ namespace boost { namespace process { namespace windows {
             }
             try
             {
-                char *penv = environ;
+                wchar_t *penv = environ;
                 while (*penv)
                 {
-                    std::string namevalue = penv;
+                    std::wstring namevalue = penv;
                     add(env(namevalue));
                     penv += namevalue.size() + 1;
                 }
             }
             catch (...)
             {
-                FreeEnvironmentStringsA(environ);
+                FreeEnvironmentStringsW(environ);
                 throw;
             }
-            FreeEnvironmentStringsA(environ);
+            FreeEnvironmentStringsW(environ);
         }
 
         bool operator==(const environment& rhs) const
@@ -230,7 +226,7 @@ namespace boost { namespace process { namespace windows {
         template<class Executor> void pre_create(Executor& e) const
         {
 			e.m_creation_flags |= CREATE_UNICODE_ENVIRONMENT;
-			e.m_env_vars_ptrs = NULL; // TODO environment_to_windows_strings().get();
+			e.m_env_vars_ptrs = environment_to_windows_wstrings().get();
 		}
 
         /**
@@ -247,29 +243,59 @@ namespace boost { namespace process { namespace windows {
          *         the environment's content. This string is of the form
          *         var1=value1\\0var2=value2\\0\\0.
          */
-        inline boost::shared_array<char> environment_to_windows_strings()
+//        inline boost::shared_array<char> environment_to_windows_strings()
+//        {
+//            boost::shared_array<char> envp;
+//
+//            if (m_environment.empty())
+//            {
+//                envp.reset(new char[2]);
+//                ZeroMemory(envp.get(), 2);
+//            }
+//            else
+//            {
+//                std::string s;
+//                for (environment_type::const_iterator it = m_environment.begin(); it != m_environment.end();
+//                    ++it)
+//                {
+//                 // TODO   s += it->first + "=" + it->second;
+//                    s.push_back(0);
+//                }
+//                envp.reset(new char[s.size() + 1]);
+//#if (BOOST_MSVC >= 1400)
+//                memcpy_s(envp.get(), s.size() + 1, s.c_str(), s.size() + 1);
+//#else
+//                memcpy(envp.get(), s.c_str(), s.size() + 1);
+//#endif
+//            }
+//
+//            return envp;
+//        }
+
+        inline boost::shared_array<wchar_t> environment_to_windows_wstrings()
         {
-            boost::shared_array<char> envp;
+            boost::shared_array<wchar_t> envp;
 
             if (m_environment.empty())
             {
-                envp.reset(new char[2]);
-                ZeroMemory(envp.get(), 2);
+                envp.reset(new wchar_t[2]);
+                ZeroMemory(envp.get(), 2*2);
             }
             else
             {
-                std::string s;
-                for (environment_type::const_iterator it = m_environment.begin(); it != m_environment.end();
+                std::wstring ws;
+                for (environment_type::const_iterator it = m_environment.begin(); m_environment.end() != it;
                     ++it)
                 {
-                 // TODO   s += it->first + "=" + it->second;
-                    s.push_back(0);
+                    ws += it->first + L"=" + it->second;
+                    ws.push_back(L'\0');
                 }
-                envp.reset(new char[s.size() + 1]);
+                ws.push_back(L'\0');
+                envp.reset(new wchar_t[ws.size() + 1]);
 #if (BOOST_MSVC >= 1400)
-                memcpy_s(envp.get(), s.size() + 1, s.c_str(), s.size() + 1);
+                memcpy_s(envp.get(), ws.size() + 1, ws.c_str(), ws.size() + 1);
 #else
-                memcpy(envp.get(), s.c_str(), s.size() + 1);
+                memcpy(envp.get(), ws.c_str(), ws.size() + 1);
 #endif
             }
 
