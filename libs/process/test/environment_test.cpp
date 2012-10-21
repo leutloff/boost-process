@@ -207,6 +207,104 @@ BOOST_AUTO_TEST_CASE(clean_or_derived_environment)
     }
 }
 
+BOOST_AUTO_TEST_CASE(append_to_envvar)
+{
+    // add to an existing environment variable
+    {
+        bp::environment t = bp::environment(bp::clean_environment())("env2", "val2")("env1", "val1");
+        check_equal(t, "env1=val1\nenv2=val2"); // checks the prerequisits of the following tests
+        t.append_var("env1", "app1");
+        check_equal(t, "env1=val1app1\nenv2=val2");
+        t.append_var("env2", "app2");
+        check_equal(t, "env1=val1app1\nenv2=val2app2");
+    }
+    {
+        bp::environment t = bp::environment(bp::clean_environment());
+        check_equal(t, "");
+        t.append_var("env1", "app1");
+        check_equal(t, "env1=app1");
+        t.append_var("env2", "app2");
+        check_equal(t, "env1=app1\nenv2=app2");
+    }
+    // "add" to an non-existing environment variable
+    {
+        bp::environment t = bp::environment(bp::clean_environment())("env2", "val2")("env1", "val1");
+        check_equal(t, "env1=val1\nenv2=val2"); // checks the prerequisits of the following tests
+        t.append_var("env1", "app1");
+        check_equal(t, "env1=val1app1\nenv2=val2");
+        t.append_var("env2", "app2");
+        check_equal(t, "env1=val1app1\nenv2=val2app2");
+    }
+    {
+        bp::environment t = bp::environment(bp::clean_environment());
+        check_equal(t, "");
+        t.append_var("env1", "app1");
+        check_equal(t, "env1=app1");
+        t.append_var("env2", "app2");
+        check_equal(t, "env1=app1\nenv2=app2");
+    }
+    // add a path to an existing environment variable
+    {
+        bp::environment t = bp::environment(bp::clean_environment())("env2", "val2")("env1", "val1");
+        check_equal(t, "env1=val1\nenv2=val2"); // checks the prerequisits of the following tests
+        t.append_var("env1", fs::path("app1"));
+#if defined(BOOST_POSIX_API)
+        check_equal(t, "env1=val1:app1\nenv2=val2");
+#elif defined(BOOST_WINDOWS_API)
+        check_equal(t, "env1=val1;app1\nenv2=val2");
+#endif
+        t.append_var("env2", fs::path("app2"));
+#if defined(BOOST_POSIX_API)
+        check_equal(t, "env1=val1:app1\nenv2=val2:app2");
+#elif defined(BOOST_WINDOWS_API)
+        check_equal(t, "env1=val1;app1\nenv2=val2;app2");
+#endif
+    }
+    {
+        bp::environment t = bp::environment(bp::clean_environment());
+        check_equal(t, "");
+        t.append_var("env1", "app1");
+        check_equal(t, "env1=app1");
+        t.append_var("env2", "app2");
+        check_equal(t, "env1=app1\nenv2=app2");
+    }
+}
+
+BOOST_AUTO_TEST_CASE(prepend_to_envvar)
+{
+    {
+        bp::environment t = bp::environment(bp::clean_environment())("env2", "val2")("env1", "val1");
+        check_equal(t, "env1=val1\nenv2=val2");
+        t.prepend_var("env1", "pre1");
+        check_equal(t, "env1=pre1val1\nenv2=val2");
+        t.prepend_var("env2", "pre2");
+        check_equal(t, "env1=pre1val1\nenv2=pre2val2");
+    }
+    {
+        bp::environment t = bp::environment(bp::clean_environment());
+        check_equal(t, "");
+        t.prepend_var("env1", "pre1");
+        check_equal(t, "env1=pre1");
+        t.prepend_var("env2", "pre2");
+        check_equal(t, "env1=pre1\nenv2=pre2");
+    }
+    {
+        bp::environment t = bp::environment(bp::clean_environment())("env2", "val2")("env1", "val1");
+        check_equal(t, "env1=val1\nenv2=val2");
+        t.prepend_var("env1", "pre1");
+        check_equal(t, "env1=pre1val1\nenv2=val2");
+        t.prepend_var("env2", "pre2");
+        check_equal(t, "env1=pre1val1\nenv2=pre2val2");
+    }
+    {
+        bp::environment t = bp::environment(bp::clean_environment());
+        check_equal(t, "");
+        t.prepend_var("env1", "pre1");
+        check_equal(t, "env1=pre1");
+        t.prepend_var("env2", "pre2");
+        check_equal(t, "env1=pre1\nenv2=pre2");
+    }
+}
 
 BOOST_AUTO_TEST_CASE(set_environment_variables)
 {   

@@ -105,6 +105,7 @@ namespace boost { namespace process { namespace posix {
          * type, and this behavior is required by Windows systems.
          */
         typedef std::map<std::string, std::string> environment_type;
+        typedef boost::filesystem::path path;
 
         environment_type m_environment;
 
@@ -161,6 +162,46 @@ namespace boost { namespace process { namespace posix {
                 std::string namevalue = *ppenv;
                 add(env(namevalue));
                 ++ppenv;
+            }
+        }
+
+        void append_var(const std::string& varname, const char* value)
+        {
+            m_environment[varname] += value;
+        }
+        void append_var(const std::string& varname, const std::string& value)
+        {
+            m_environment[varname] += value;
+        }
+        void append_var(const std::string& varname, const path& p)
+        {
+            if (0 == m_environment.count(varname))
+            {
+                m_environment[varname] = p.native();
+            }
+            else
+            {
+                m_environment[varname] += ':' + p.native();
+            }
+        }
+
+        void prepend_var(const std::string& varname, const char* value)
+        {
+            m_environment[varname] = value + m_environment[varname];
+        }
+        void prepend_var(const std::string& varname, const std::string& value)
+        {
+            m_environment[varname] = value + m_environment[varname];
+        }
+        void prepend_var(const std::string& varname, const path& p)
+        {
+            if (0 == m_environment.count(varname))
+            {
+                m_environment[varname] = p.native();
+            }
+            else
+            {
+                m_environment[varname] =  p.native() + ':' + m_environment[varname];
             }
         }
 
