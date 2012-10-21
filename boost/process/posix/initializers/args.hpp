@@ -23,6 +23,9 @@ namespace boost { namespace process { namespace posix {
 
     struct arg : public initializer 
     {
+        // multiple arg initializers can be combined in one sequence.
+        typedef initializer_combination::ignore combination_category;
+
         typedef boost::filesystem::path path;
         typedef std::vector<char>       chars;
         

@@ -29,6 +29,9 @@ namespace boost { namespace process { namespace posix {
     
     struct std_in_from_path : io_initializer
     {
+        // multiple std_in initializers cannot be combined in one sequence. TODO put both std_in_from_path and std_in_from into a single structure with the same combination_category
+        typedef initializer_combination::exclusive combination_category;
+
         std_in_from_path(const path& p) : io_initializer(), m_path(p), m_source() {}
         
         template<class Executor> void post_fork_child(Executor& e) const
@@ -44,6 +47,9 @@ namespace boost { namespace process { namespace posix {
     
     struct std_out_to_path : io_initializer
     {
+        // multiple std_out initializers cannot be combined in one sequence. TODO put both std_out_to_path and std_out_to into a single structure with the same combination_category
+        typedef initializer_combination::exclusive combination_category;
+
         std_out_to_path(const path& p) : io_initializer(), m_path(p), m_sink() {}
         
         template<class Executor> void post_fork_child(Executor& e) const
@@ -59,6 +65,9 @@ namespace boost { namespace process { namespace posix {
     
     struct std_err_to_path : io_initializer
     {
+        // multiple std_err initializers cannot be combined in one sequence. TODO put both std_err_to_path and std_err_to into a single structure with the same combination_category
+        typedef initializer_combination::exclusive combination_category;
+
         std_err_to_path(const path& p) : io_initializer(), m_path(p), m_sink() {}
         
         template<class Executor> void post_fork_child(Executor& e) const
@@ -76,6 +85,9 @@ namespace boost { namespace process { namespace posix {
 
     struct std_in_from : io_initializer
     {
+        // multiple std_in initializers cannot be combined in one sequence. TODO put both std_in_from_path and std_in_from into a single structure with the same combination_category
+        typedef initializer_combination::exclusive combination_category;
+
         std_in_from(const         source_type& s) : io_initializer(), m_source(s         ) {}
         std_in_from(const file_descriptor_ray& r) : io_initializer(), m_source(r.m_source) {}
 
@@ -89,6 +101,7 @@ namespace boost { namespace process { namespace posix {
 
     struct std_out_to : io_initializer
     {
+        // multiple std_out initializers cannot be combined in one sequence. TODO put both std_out_to_path and std_out_to into a single structure with the same combination_category
         typedef initializer_combination::exclusive combination_category;
 
         std_out_to(const           sink_type& s) : io_initializer(), m_sink(s       ) {}
@@ -104,6 +117,9 @@ namespace boost { namespace process { namespace posix {
 
     struct std_err_to : io_initializer
     {
+        // multiple std_in initializers cannot be combined in one sequence. TODO put both std_in_from_path and std_in_from into a single structure with the same combination_category
+        typedef initializer_combination::exclusive combination_category;
+
         std_err_to(const           sink_type& s) : io_initializer(), m_sink(s       ) {}
         std_err_to(const file_descriptor_ray& r) : io_initializer(), m_sink(r.m_sink) {}
 

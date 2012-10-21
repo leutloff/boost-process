@@ -24,6 +24,9 @@ namespace boost { namespace process { namespace windows {
 
     struct arg : public initializer 
     {
+        // multiple arg initializers can be combined in one sequence.
+        typedef initializer_combination::ignore combination_category;
+
         typedef boost::filesystem::path path;
         typedef wchar_t            char_type;
         typedef std::wstring     string_type;

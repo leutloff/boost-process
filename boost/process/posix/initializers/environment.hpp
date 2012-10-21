@@ -29,6 +29,9 @@ namespace boost { namespace process { namespace posix {
 
     struct env : public initializer
     {
+        // multiple env initializers can be combined in one sequence.
+        typedef initializer_combination::ignore combination_category;
+
         typedef std::pair<std::string, std::string> namevalue;
         typedef boost::filesystem::path path;
 
@@ -106,6 +109,9 @@ namespace boost { namespace process { namespace posix {
          */
         typedef std::map<std::string, std::string> environment_type;
         typedef boost::filesystem::path path;
+
+        // multiple environment initializers should not be combined in one sequence.
+        typedef initializer_combination::exclusive combination_category;
 
         environment_type m_environment;
 

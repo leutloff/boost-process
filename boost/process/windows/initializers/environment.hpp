@@ -26,6 +26,9 @@ namespace boost { namespace process { namespace windows {
 
     struct env : public initializer
     {
+        // multiple env initializers can be combined in one sequence.
+        typedef initializer_combination::ignore combination_category;
+
         typedef std::wstring name_type;
         typedef std::wstring value_type;
         typedef std::pair<name_type, value_type> namevalue_type;
@@ -139,6 +142,8 @@ namespace boost { namespace process { namespace windows {
          * type, and this behavior is required by Windows systems.
          */
         typedef std::map<std::wstring, std::wstring, case_insensitve_sort> environment_type;
+        // multiple environment initializers should not be combined in one sequence.
+        typedef initializer_combination::exclusive combination_category;
 
         environment_type m_environment;
 
