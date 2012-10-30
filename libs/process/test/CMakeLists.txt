@@ -78,7 +78,9 @@ target_link_libraries(execute_show_env ${Boost_LIBRARIES})
 # fail to compile:
 #add_executable(double_path_fail double_path_fail.cpp)
 
-add_definitions("-g")
+if (CMAKE_COMPILER_IS_GNUCC)
+   add_definitions("-g")
+endif()
 
 #include(Ryppl)
 #include(RypplTestSuite)
