@@ -67,7 +67,7 @@ namespace boost { namespace process { namespace posix {
                                               ,const        path& p) : m_namevalue(name, p.string()) {}
 //        template<class Executor> void  pre_fork_parent(Executor& e) const
 //        {
-//            //TODO e.m_env_vars_ptrs.push_back(&m_namevalue);
+//            //TODO - really??  e.m_env_vars_ptrs.push_back(&m_namevalue);
 //        }
 
         bool operator==(const env& rhs) const
@@ -252,9 +252,9 @@ namespace boost { namespace process { namespace posix {
         }
 
         template<class Executor> void pre_fork_parent(Executor& e) const
-		{
+        {
             e.m_env_vars_ptrs = environment_to_envp();
-		}
+        }
 
         friend std::ostream& operator<<(std::ostream&, const environment&);
     };
