@@ -233,7 +233,7 @@ namespace boost { namespace process { namespace posix {
          *         string of the form var=value. The caller is responsible for
          *         freeing them.
          */
-        inline char** environment_to_envp()
+        inline char** environment_to_envp() const
         {
             char **envp = new char*[m_environment.size() + 1];
             environment_type::size_type i = 0;
@@ -248,20 +248,10 @@ namespace boost { namespace process { namespace posix {
             return envp;
         }
 
-        template<class Executor> void pre_create(Executor& e) const
-		{
-            // TODO - remove the initial implementation
-//#			if defined(__APPLE__)
-			
-//				e.m_env_vars_ptrs = *_NSGetEnviron();
-			
-//#			else
-						
-//				e.m_env_vars_ptrs = environ;
-			
-//#			endif
+        template<class Executor> void pre_fork_parent(Executor& e) const
+        {
             e.m_env_vars_ptrs = environment_to_envp();
-		}
+        }
 
         friend std::ostream& operator<<(std::ostream&, const environment&);
     };
