@@ -72,10 +72,13 @@ target_link_libraries(basic_run_test ${Boost_LIBRARIES})
 add_executable(environment_test environment_test.cpp)
 target_link_libraries(environment_test ${Boost_LIBRARIES})
 
+add_executable(execute_show_env execute_show_env.cpp)
+target_link_libraries(execute_show_env ${Boost_LIBRARIES})
+
 # fail to compile:
 #add_executable(double_path_fail double_path_fail.cpp)
 
-#add_definitions("-g")
+add_definitions("-g")
 
 #include(Ryppl)
 #include(RypplTestSuite)

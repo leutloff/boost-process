@@ -28,7 +28,6 @@ namespace bio = boost::iostreams;
 namespace bp = boost::process;
 namespace fs = boost::filesystem;
 
-
 // TODO move to own file?
 BOOST_AUTO_TEST_CASE(prepare_arguments)
 {
@@ -184,6 +183,22 @@ void check_contains(std::wstring const& wscomplete, std::wstring const& wscontai
     BOOST_CHECK_MESSAGE(std::wstring::npos != wscomplete.find(wscontains), complete + " does not contain " + contains);
 }
 
+void check_not_contains(std::string const& complete, std::string const& contains, int line)
+{
+    BOOST_CHECK_MESSAGE(std::string::npos == complete.find(contains),
+                        boost::lexical_cast<std::string>(line) + ": " + complete + " contains " + contains + ", but it should not.");
+}
+
+void check_not_contains(std::wstring const& wscomplete, std::wstring const& wscontains, int line)
+{
+    std::string complete(wscomplete.begin(), wscomplete.end());
+    std::string contains(wscontains.begin(), wscontains.end());
+    BOOST_CHECK_MESSAGE(std::wstring::npos == wscomplete.find(wscontains),
+                        boost::lexical_cast<std::string>(line) + ": " + complete + " does not contain " + contains + ", but it should not.");
+}
+
+
+
 BOOST_AUTO_TEST_CASE(clean_or_derived_environment)
 {
     {
@@ -319,12 +334,12 @@ BOOST_AUTO_TEST_CASE(prepend_to_envvar)
 }
 
 BOOST_AUTO_TEST_CASE(set_environment_variables)
-{   
+{
     // check that application to launch exists - if this test fails, check the working directory,
     // e.g. Qt Creator: Click on Projects, select tab Run Settings and change the Working Directory to the dir with the executables.
     // or Visual Studio: Open the Project Properties, select Debugging and change the Working Directory from $(ProjectDir) to $(OutDir).
 #if defined(BOOST_POSIX_API)
-    fs::path child_process = "./child_show_env";
+    fs::path child_process = "child_show_env";
 #elif defined(BOOST_WINDOWS_API)
     fs::path child_process = "child_show_env.exe";
 #endif
@@ -335,15 +350,60 @@ BOOST_AUTO_TEST_CASE(set_environment_variables)
     {
         typedef bio::stream<bio::file_descriptor_source> source;
         bp::file_descriptor_ray ray;
-        bp::monitor m(bp::make_child(bp::paths(child_process), bp::std_out_to(ray)));
+        bp::monitor m(bp::make_child(bp::paths(child_process),
+                                     bp::environment("env1", "val1")("env3", "val3")("env2", "val2"),
+                                     bp::std_out_to(ray)));
         ray.m_sink.close(); // currently req's manual closing
-        //source redirected(ray.m_source);
-        //boost::tuples::tuple version(bio::parse(redirected)); // parse the istream
-        // std::cout << &redirected << std::endl;
         bio::stream_buffer<bio::file_descriptor_source> pstream(ray.m_source);
-        std::cout << &pstream << std::endl;
-
+        std::ostringstream oss;
+        oss << &pstream;
+        //std::cout << oss.str() << std::endl;
         m.join();
+        check_not_contains(oss.str(), "\nPATH=", __LINE__);
+        check_contains(oss.str(), "env1=val1\nenv2=val2\nenv3=val3");
+    }
+    catch (std::exception const& ex)
+    {
+        std::ostringstream oss;
+        oss << "something went wrong: " << ex.what();
+        std::cout << oss.str() << std::endl;
+        BOOST_CHECK_MESSAGE(false,  oss.str());
+    }
+    catch (...)
+    {
+        std::cout << "something went wrong\n";
+        BOOST_CHECK_MESSAGE(false, "an exception was thrown");
+    }
+}
+
+BOOST_AUTO_TEST_CASE(set_derived_environment_variables)
+{
+    // check that application to launch exists - if this test fails, check the working directory,
+    // e.g. Qt Creator: Click on Projects, select tab Run Settings and change the Working Directory to the dir with the executables.
+    // or Visual Studio: Open the Project Properties, select Debugging and change the Working Directory from $(ProjectDir) to $(OutDir).
+#if defined(BOOST_POSIX_API)
+    fs::path child_process = "child_show_env";
+#elif defined(BOOST_WINDOWS_API)
+    fs::path child_process = "child_show_env.exe";
+#endif
+    //std::cout << "child_process: " << child_process << std::endl;
+    BOOST_CHECK_EQUAL(true, fs::exists(child_process));
+
+    try
+    {
+        typedef bio::stream<bio::file_descriptor_source> source;
+        bp::file_descriptor_ray ray;
+        bp::monitor m(bp::make_child(bp::paths(child_process),
+                                     bp::environment(bp::derive_environment())("env1", "val1")("env2", "val2")("env3", "val3"),
+                                     bp::std_out_to(ray)));
+        ray.m_sink.close(); // currently req's manual closing
+        bio::stream_buffer<bio::file_descriptor_source> pstream(ray.m_source);
+        std::ostringstream oss;
+        oss << &pstream;
+        //std::cout << oss.str() << std::endl;
+        m.join();
+        check_contains(oss.str(), "\nPATH=");
+        check_contains(oss.str(), "env1=val1\nenv2=val2\nenv3=val3");
     }
     catch (std::exception const& ex)
     {

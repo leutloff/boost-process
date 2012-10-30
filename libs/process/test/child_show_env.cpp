@@ -33,18 +33,22 @@ extern char **environ;
 
 int main(int argc, char *argv[])
 {
+    std::cout << argv[0] << std::endl;
+
+    int i = 0;
 #if defined(__APPLE__)
     char **env = *_NSGetEnviron();
 #else
     char **env = environ;
 #endif
-
     while (*env)
     {
         std::string s = *env;
-        std::cout <<  s << std::endl;
+        std::cout << s << std::endl;
         ++env;
+        ++i;
     }
+    std::cout << "Number of Environment Variables: " << i << std::endl;
     return EXIT_SUCCESS;
 }
 
@@ -52,15 +56,14 @@ int main(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-#   ifdef GetEnvironmentStrings
-#   undef GetEnvironmentStrings
-#   endif
+    std::cout << argv[0] << std::endl;
 
-    char *ms_environ = GetEnvironmentStrings();
+    int i = 0;
+    char *ms_environ = GetEnvironmentStringsA();
     if (!ms_environ)
     {
         boost::throw_exception(boost::system::system_error(boost::system::error_code(GetLastError(), boost::system::get_system_category()),
-                   "GetEnvironmentStrings() failed"));
+                   "GetEnvironmentStringsA() failed"));
     }
     try
     {
@@ -68,8 +71,9 @@ int main(int argc, char *argv[])
         while (*env)
         {
             std::string s = env;
-            std::cout <<  s << std::endl;
+            std::cout << s << std::endl;
             env += s.size() + 1;
+            ++i;
         }
     }
     catch (...)
@@ -78,6 +82,7 @@ int main(int argc, char *argv[])
         throw;
     }
     FreeEnvironmentStringsA(ms_environ);
+    std::cout << "Number of Environment Variables: " << i << std::endl;
 }
 
 #endif

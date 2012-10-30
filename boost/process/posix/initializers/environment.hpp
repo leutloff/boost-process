@@ -17,6 +17,9 @@
 #include <boost/process/config.hpp>
 #include <boost/process/posix/initializers/initializer.hpp>
 
+#include <boost/filesystem/path.hpp>
+#include <boost/lexical_cast.hpp>
+
 #if defined(__APPLE__)
 #	include <crt_externs.h> // _NSGetEnviron()
 #endif
@@ -27,7 +30,7 @@ namespace boost { namespace process { namespace posix {
 
     struct executor;
 
-    struct env : public initializer
+    struct env // : public initializer
     {
         // multiple env initializers can be combined in one sequence.
         typedef initializer_combination::ignore combination_category;
@@ -233,7 +236,7 @@ namespace boost { namespace process { namespace posix {
          *         string of the form var=value. The caller is responsible for
          *         freeing them.
          */
-        inline char** environment_to_envp()
+        inline char** environment_to_envp() const
         {
             char **envp = new char*[m_environment.size() + 1];
             environment_type::size_type i = 0;
@@ -248,18 +251,8 @@ namespace boost { namespace process { namespace posix {
             return envp;
         }
 
-        template<class Executor> void pre_create(Executor& e) const
+        template<class Executor> void pre_fork_parent(Executor& e) const
 		{
-            // TODO - remove the initial implementation
-//#			if defined(__APPLE__)
-			
-//				e.m_env_vars_ptrs = *_NSGetEnviron();
-			
-//#			else
-						
-//				e.m_env_vars_ptrs = environ;
-			
-//#			endif
             e.m_env_vars_ptrs = environment_to_envp();
 		}
 
