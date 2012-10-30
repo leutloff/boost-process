@@ -24,11 +24,8 @@ namespace boost { namespace process { namespace windows {
 
     struct executor;
 
-    struct env : public initializer
+    struct env
     {
-        // multiple env initializers can be combined in one sequence.
-        typedef initializer_combination::ignore combination_category;
-
         typedef std::wstring name_type;
         typedef std::wstring value_type;
         typedef std::pair<name_type, value_type> namevalue_type;
@@ -78,10 +75,6 @@ namespace boost { namespace process { namespace windows {
                                               ,const std::string& value) : m_namevalue(from(name, value)) {}
                                            env(const std::string& name
                                               ,const        path& p) : m_namevalue(from(name, p.string())) {}
-//        template<class Executor> void  pre_fork_parent(Executor& e) const
-//        {
-//            //TODO e.m_env_vars_ptrs.push_back(&m_namevalue);
-//        }
 
         bool operator==(const env& rhs) const
         {
@@ -144,6 +137,8 @@ namespace boost { namespace process { namespace windows {
         typedef std::map<std::wstring, std::wstring, case_insensitve_sort> environment_type;
         // multiple environment initializers should not be combined in one sequence.
         typedef initializer_combination::exclusive combination_category;
+        typedef boost::filesystem::path path;
+        typedef boost::filesystem::wpath wpath;
 
         environment_type m_environment;
 
@@ -277,7 +272,7 @@ namespace boost { namespace process { namespace windows {
 //            return envp;
 //        }
 
-        inline boost::shared_array<wchar_t> environment_to_windows_wstrings()
+        inline boost::shared_array<wchar_t> environment_to_windows_wstrings() const
         {
             boost::shared_array<wchar_t> envp;
 
@@ -305,6 +300,92 @@ namespace boost { namespace process { namespace windows {
             }
 
             return envp;
+        }
+
+        void append_var(const std::string& varname, const char* value)
+        {
+            std::string v(value);
+            append_var(varname, v);
+        }
+        void append_var(const std::string& varname, const std::string& value)
+        {
+            std::wstring wn(varname.begin(), varname.end());
+            std::wstring wv(value.begin(), value.end());
+            append_var(wn, wv);
+        }
+        void append_var(const std::wstring& varname, const wchar_t* value)
+        {
+            m_environment[varname] += value;
+        }
+        void append_var(const std::wstring& varname, const std::wstring& value)
+        {
+            m_environment[varname] += value;
+        }
+        void append_var(const std::string& varname, const path& p)
+        {
+            std::wstring wn(varname.begin(), varname.end());
+            if (0 == m_environment.count(wn))
+            {
+                m_environment[wn] = p.native();
+            }
+            else
+            {
+                m_environment[wn] += L';' + p.native();
+            }
+        }
+        void append_var(const std::wstring& varname, const wpath& p)
+        {
+            if (0 == m_environment.count(varname))
+            {
+                m_environment[varname] = p.native();
+            }
+            else
+            {
+                m_environment[varname] += L';' + p.native();
+            }
+        }
+
+        void prepend_var(const std::string& varname, const char* value)
+        {
+            std::string v(value);
+            prepend_var(varname, v);
+        }
+        void prepend_var(const std::string& varname, const std::string& value)
+        {
+            std::wstring wn(varname.begin(), varname.end());
+            std::wstring wv(value.begin(), value.end());
+            prepend_var(wn, wv);
+        }
+        void prepend_var(const std::wstring& varname, const wchar_t* value)
+        {
+            m_environment[varname] = value + m_environment[varname];
+        }
+        void prepend_var(const std::wstring& varname, const std::wstring& value)
+        {
+            m_environment[varname] = value + m_environment[varname];
+        }
+        void prepend_var(const std::string& varname, const path& p)
+        {
+            std::wstring wn(varname.begin(), varname.end());
+            if (0 == m_environment.count(wn))
+            {
+                m_environment[wn] = p.native();
+            }
+            else
+            {
+                m_environment[wn] =  p.native() + L';' + m_environment[wn];
+            }
+        }
+        void prepend_var(const std::wstring& varname, const wpath& p)
+        {
+            if (0 == m_environment.count(varname))
+            {
+                m_environment[varname] = p.native();
+            }
+            else
+            {
+                m_environment[varname] =  p.native() + L';' + m_environment[varname];
+            }
         }
 
         friend std::wostream& operator<<(std::wostream&, const environment&);
