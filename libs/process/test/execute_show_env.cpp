@@ -31,8 +31,8 @@
 #   if defined(__APPLE__)
 #       include <crt_externs.h>
 #   endif
-//#elif defined(BOOST_WINDOWS_API)
-//#   include <windows.h>
+#elif defined(BOOST_WINDOWS_API)
+#   include <windows.h>
 #else
 #   error "Unsupported platform."
 #endif
@@ -63,9 +63,9 @@ int main(int argc, char *argv[])
 
     //m_arg_ptrs.assign_app(m_exe.c_str()); // TODO why is assign_app not accepting a const char*?
     m_arg_ptrs.assign_app(exe);
-//    m_arg_ptrs.push_back("-l");
-//    m_arg_ptrs.push_back("-a");
-//    m_arg_ptrs.push_back("/tmp");
+    //    m_arg_ptrs.push_back("-l");
+    //    m_arg_ptrs.push_back("-a");
+    //    m_arg_ptrs.push_back("/tmp");
 
 
     pid_t m_id = fork();
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
         }
 
 
-        // now the same againg
+        // now the same again
         try
         {
             std::cout << "1 - Now doing the same with boost::process itself ..." << std::endl;
@@ -138,9 +138,83 @@ int main(int argc, char *argv[])
 
 #elif defined(BOOST_WINDOWS_API)
 
+
+
 int main(int argc, char *argv[])
 {
- // TODO
+    using namespace std;
+    typedef boost::filesystem::path        path;
+    typedef wchar_t                        char_type;
+    typedef std::wstring                   string_type;
+    typedef boost::process::executor::args args;
+    typedef boost::process::environment    environment;
+    typedef boost::process::env            env;
+
+    HANDLE result = INVALID_HANDLE_VALUE;
+    path                  parent_exe = argv[0];
+
+    //char_type exe[] = L"C:\\Windows\\System32\\xcopy.exe";
+    //path                  m_exe = exe;
+    //args                  m_args;
+    //m_args.assign_app(exe);
+    //m_args.push_back(std::wstring(L"/?"));
+
+    char_type exe[] = L"child_show_env.exe";
+    path                  m_exe = parent_exe.branch_path() / exe;
+    //path                  m_exe = path(L".") / exe; does not work
+    args                  m_args;
+    m_args.assign_app(exe);
+
+    std::wcout << "m_args.ptr(): " << m_args.ptr() << std::endl;
+
+
+    LPSECURITY_ATTRIBUTES m_process_security_attributes_ptr = NULL;
+    LPSECURITY_ATTRIBUTES m_thread_security_attributes_ptr = NULL;
+    bool                  m_inherit_handles = false;
+    DWORD                 m_creation_flags = NULL;
+
+    void*                 m_env_vars_ptrs = NULL;
+    //environment e("USER", "user1");
+    //e.add(env("PATH=/usr/bin:/bin:/opt/bin"));
+    //char_type**                m_env_vars_ptrs = e.environment_to_envp();
+
+    path                  m_working_dir = parent_exe.branch_path();
+
+    STARTUPINFOW m_startup_info;
+    PROCESS_INFORMATION m_process_info;
+    memset(&m_startup_info, 0, sizeof(m_startup_info));
+    m_startup_info.cb = sizeof(m_startup_info);
+    memset(&m_process_info, 0, sizeof(m_process_info));
+
+    HANDLE child_pid = INVALID_HANDLE_VALUE;
+    if (CreateProcessW(
+        m_exe.wstring().c_str()
+        , m_args.ptr()
+        , m_process_security_attributes_ptr
+        , m_thread_security_attributes_ptr
+        , m_inherit_handles
+        , m_creation_flags
+        , m_env_vars_ptrs
+        , m_working_dir.wstring().c_str()
+        , &m_startup_info
+        , &m_process_info))
+    {
+        child_pid = m_process_info.hProcess;
+        CloseHandle(m_process_info.hThread);
+    }
+    else
+    {
+        printf( "CreateProcessW failed (%d).\n", GetLastError() );
+        return 1;
+    }
+
+    if (INVALID_HANDLE_VALUE != child_pid)
+    {
+        WaitForSingleObject(child_pid, INFINITE );
+    }
+
+    CloseHandle(child_pid);
+    return 0;
 }
 
 #endif

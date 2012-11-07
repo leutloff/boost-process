@@ -16,6 +16,7 @@
 
 #include <boost/process/config.hpp>
 #include <boost/process/windows/initializers/initializer.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/shared_array.hpp>
 
 #include <map>
