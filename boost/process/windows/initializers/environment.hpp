@@ -226,78 +226,65 @@ namespace boost { namespace process { namespace windows {
 
         template<class Executor> void pre_create(Executor& e) const
         {
-			e.m_creation_flags |= CREATE_UNICODE_ENVIRONMENT;
-			e.m_env_vars_ptrs = environment_to_windows_wstrings().get();
-		}
+            e.m_creation_flags |= CREATE_UNICODE_ENVIRONMENT;
+            e.m_env_vars = environment_to_windows_strings();
+        }
 
         /**
-         * Converts an environment to a string used by CreateProcess().
+         * Converts an environment to a string used by CreateProcessW().
          *
          * Converts the environment's contents to the format used by the
-         * CreateProcess() system call. The returned char* string is
+         * CreateProcessW() system call. The returned wchar_t* string is
          * allocated in dynamic memory; the caller must free it when not
          * used any more. This is enforced by the use of a shared pointer.
          *
          * This operation is only available on Windows systems.
          *
-         * \return A dynamically allocated char* string that represents
+         * \return A dynamically allocated wchar_t* string that represents
          *         the environment's content. This string is of the form
          *         var1=value1\\0var2=value2\\0\\0.
          */
-//        inline boost::shared_array<char> environment_to_windows_strings()
-//        {
-//            boost::shared_array<char> envp;
-//
-//            if (m_environment.empty())
-//            {
-//                envp.reset(new char[2]);
-//                ZeroMemory(envp.get(), 2);
-//            }
-//            else
-//            {
-//                std::string s;
-//                for (environment_type::const_iterator it = m_environment.begin(); it != m_environment.end();
-//                    ++it)
-//                {
-//                 // TODO   s += it->first + "=" + it->second;
-//                    s.push_back(0);
-//                }
-//                envp.reset(new char[s.size() + 1]);
-//#if (BOOST_MSVC >= 1400)
-//                memcpy_s(envp.get(), s.size() + 1, s.c_str(), s.size() + 1);
-//#else
-//                memcpy(envp.get(), s.c_str(), s.size() + 1);
-//#endif
-//            }
-//
-//            return envp;
-//        }
-
-        inline boost::shared_array<wchar_t> environment_to_windows_wstrings() const
+        inline boost::shared_array<wchar_t> environment_to_windows_strings() const
         {
             boost::shared_array<wchar_t> envp;
 
             if (m_environment.empty())
             {
-                envp.reset(new wchar_t[2]);
-                ZeroMemory(envp.get(), 2*2);
+                const size_t size = 2;
+                envp.reset(new wchar_t[size]);
+                memset(envp.get(), 0, size*sizeof(wchar_t));
             }
             else
             {
-                std::wstring ws;
-                for (environment_type::const_iterator it = m_environment.begin(); m_environment.end() != it;
-                    ++it)
+                size_t size = 2;    // add two closing \0
+                for (environment_type::const_iterator it = m_environment.begin(); 
+                     m_environment.end() != it;
+                     ++it)
                 {
-                    ws += it->first + L"=" + it->second;
-                    ws.push_back(L'\0');
+                    //   += it->first + L'=' + it->second + L'\0'
+                    size += it->first.length() + it->second.length() + 2;
                 }
-                ws.push_back(L'\0');
-                envp.reset(new wchar_t[ws.size() + 1]);
-#if (BOOST_MSVC >= 1400)
-                memcpy_s(envp.get(), ws.size() + 1, ws.c_str(), ws.size() + 1);
+
+                // smaller buffer are not working with memcpy_s
+                if (54 > size) { size = 54; } 
+
+                envp.reset(new wchar_t[size]);
+                memset(envp.get(), 0, size*sizeof(wchar_t));
+                std::wstring ws;
+                wchar_t* b = envp.get();
+                for (environment_type::const_iterator it = m_environment.begin(); 
+                     m_environment.end() != it;
+                     ++it)
+                {
+                    ws = it->first + L"=" + it->second;
+                    const size_t n = ws.length() * sizeof(wchar_t);
+#if (BOOST_MSVC >= 1400) && !defined(ABC)
+                    memcpy_s(b, n, ws.c_str(), n);
 #else
-                memcpy(envp.get(), ws.c_str(), ws.size() + 1);
+                    memcpy(b, ws.c_str(), n);
 #endif
+                    b += ws.length() + 1;
+                }
             }
 
             return envp;

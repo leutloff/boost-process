@@ -10,6 +10,7 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/fusion/algorithm/iteration/for_each.hpp>
+#include <boost/shared_array.hpp>
 
 #include <boost/process/windows/child.hpp>
 #include <boost/process/windows/initializers/initializer.hpp>
@@ -40,7 +41,7 @@ namespace boost { namespace process { namespace windows {
         , m_thread_security_attributes_ptr(0)
         , m_inherit_handles(false)
         , m_creation_flags(0)
-        , m_env_vars_ptrs(0)
+        , m_env_vars(0)
         , m_working_dir()
         , m_startup_info()
         , m_process_info()
@@ -78,7 +79,7 @@ namespace boost { namespace process { namespace windows {
             , m_thread_security_attributes_ptr
             , m_inherit_handles
             , m_creation_flags
-            , m_env_vars_ptrs
+            , (LPVOID)m_env_vars.get()
             , m_working_dir.wstring().c_str()
             , &m_startup_info
             , &m_process_info))
@@ -148,7 +149,7 @@ namespace boost { namespace process { namespace windows {
         LPSECURITY_ATTRIBUTES m_thread_security_attributes_ptr;
         bool                  m_inherit_handles;
         DWORD                 m_creation_flags;
-        void*                 m_env_vars_ptrs;
+        boost::shared_array<wchar_t>  m_env_vars;
         path                  m_working_dir;
         STARTUPINFOW          m_startup_info;
         PROCESS_INFORMATION   m_process_info;

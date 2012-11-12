@@ -144,28 +144,18 @@ int main(int argc, char *argv[])
 {
     using namespace std;
     typedef boost::filesystem::path        path;
-    typedef wchar_t                        char_type;
-    typedef std::wstring                   string_type;
     typedef boost::process::executor::args args;
     typedef boost::process::environment    environment;
     typedef boost::process::env            env;
 
     HANDLE result = INVALID_HANDLE_VALUE;
-    path                  parent_exe = argv[0];
-
-    //char_type exe[] = L"C:\\Windows\\System32\\xcopy.exe";
-    //path                  m_exe = exe;
-    //args                  m_args;
-    //m_args.assign_app(exe);
-    //m_args.push_back(std::wstring(L"/?"));
-
-    char_type exe[] = L"child_show_env.exe";
+    path parent_exe = argv[0];
+    wchar_t exe[] = L"child_show_env.exe";
     path                  m_exe = parent_exe.branch_path() / exe;
     //path                  m_exe = path(L".") / exe; does not work
     args                  m_args;
     m_args.assign_app(exe);
-
-    std::wcout << "m_args.ptr(): " << m_args.ptr() << std::endl;
+    //std::wcout << "m_args.ptr(): " << m_args.ptr() << std::endl;
 
 
     LPSECURITY_ATTRIBUTES m_process_security_attributes_ptr = NULL;
@@ -173,10 +163,11 @@ int main(int argc, char *argv[])
     bool                  m_inherit_handles = false;
     DWORD                 m_creation_flags = NULL;
 
-    void*                 m_env_vars_ptrs = NULL;
-    //environment e("USER", "user1");
-    //e.add(env("PATH=/usr/bin:/bin:/opt/bin"));
-    //char_type**                m_env_vars_ptrs = e.environment_to_envp();
+    environment e("USER", "user1");
+    e.add(env("PATH=/usr/bin:/bin:/opt/bin"));
+    m_creation_flags |= CREATE_UNICODE_ENVIRONMENT;
+    boost::shared_array<wchar_t> m_env_vars = e.environment_to_windows_strings();
+    //boost::shared_array<wchar_t> m_env_vars; // works, too. Defaults to NULL.
 
     path                  m_working_dir = parent_exe.branch_path();
 
@@ -194,7 +185,7 @@ int main(int argc, char *argv[])
         , m_thread_security_attributes_ptr
         , m_inherit_handles
         , m_creation_flags
-        , m_env_vars_ptrs
+        , m_env_vars.get()
         , m_working_dir.wstring().c_str()
         , &m_startup_info
         , &m_process_info))
@@ -204,7 +195,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-        printf( "CreateProcessW failed (%d).\n", GetLastError() );
+        std::wcout << L"CreateProcessW failed (" << GetLastError()  <<  L")." << std::endl;
         return 1;
     }
 
@@ -214,6 +205,38 @@ int main(int argc, char *argv[])
     }
 
     CloseHandle(child_pid);
+
+
+    // now the same again
+    try
+    {
+        std::wcout << L"1 - Now doing the same with boost::process itself ..." << std::endl;
+        namespace bp=boost::process;
+        namespace bio = boost::iostreams;
+
+        typedef bio::stream<bio::file_descriptor_source> source;
+        bp::file_descriptor_ray ray;
+        bp::monitor m(bp::make_child(bp::paths(m_exe, m_working_dir.c_str()), e, bp::std_out_to(ray)));
+        ray.m_sink.close(); // currently req's manual closing
+        bio::stream_buffer<bio::file_descriptor_source> pstream(ray.m_source);
+        // this is not working: 
+        //std::ostringstream oss;
+        //oss << &pstream;
+        //std::cout << oss.str() << std::endl;
+        // this is printing the env vars on stdout, but an exeception occured: 
+        // "failed reading: Die Pipe wurde beendet.", translated: "failed reading: The pipe was terminated."
+        std::cout << &pstream << std::endl;
+        m.join();
+    }
+    catch (std::exception const& ex)
+    {
+        std::wcout << L"something went wrong: " << ex.what() << std::endl;
+    }
+    catch (...)
+    {
+        std::wcout << L"something went wrong" << std::endl;
+    }
+
     return 0;
 }
 
