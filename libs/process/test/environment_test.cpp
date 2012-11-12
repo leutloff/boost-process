@@ -341,7 +341,7 @@ BOOST_AUTO_TEST_CASE(set_environment_variables)
 #if defined(BOOST_POSIX_API)
     fs::path child_process = "child_show_env";
 #elif defined(BOOST_WINDOWS_API)
-    fs::path child_process = "child_show_env.exe";
+    fs::path child_process = ".\\child_show_env.exe";
 #endif
     //std::cout << "child_process: " << child_process << std::endl;
     BOOST_CHECK_EQUAL(true, fs::exists(child_process));
@@ -384,7 +384,7 @@ BOOST_AUTO_TEST_CASE(set_derived_environment_variables)
 #if defined(BOOST_POSIX_API)
     fs::path child_process = "child_show_env";
 #elif defined(BOOST_WINDOWS_API)
-    fs::path child_process = "child_show_env.exe";
+    fs::path child_process = ".\\child_show_env.exe";
 #endif
     //std::cout << "child_process: " << child_process << std::endl;
     BOOST_CHECK_EQUAL(true, fs::exists(child_process));
