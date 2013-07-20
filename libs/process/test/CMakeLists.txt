@@ -6,6 +6,8 @@ if(EXISTS "${PROJECT_SOURCE_DIR}/../boost_1_48_0")
     set(BOOST_INCLUDEDIR "${PROJECT_SOURCE_DIR}/../boost_1_48_0")
     set(BOOST_LIBRARYDIR "${PROJECT_SOURCE_DIR}/../boost_1_48_0/stage/lib")
     message("setting BOOST_ROOT to: ${BOOST_ROOT}")
+else()
+    set(BOOST_LIBRARYDIR "/usr/lib")
 endif()
 
 find_package(Boost COMPONENTS filesystem thread iostreams date_time system unit_test_framework REQUIRED)

@@ -1,0 +1,11 @@
+language: cpp
+compiler:
+  - gcc
+#  - clang
+before_script:
+  - sudo apt-get install libboost-all-dev
+  - ls -l /usr/lib/libboost*
+  - mkdir travis-build
+  - cd travis-build
+  - cmake ../src
+script: make && pushd libs/process/test && ./basic_run_test && ./environment_test && ./execute_show_env && popd
