@@ -7,5 +7,5 @@ before_script:
   - ls -l /usr/lib/libboost*
   - mkdir travis-build
   - cd travis-build
-  - cmake ../src
+  - cmake ..
 script: make && pushd libs/process/test && ./basic_run_test && ./environment_test && ./execute_show_env && popd

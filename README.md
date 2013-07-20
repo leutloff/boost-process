@@ -12,3 +12,5 @@ The the tests can be executed:
 
     pushd libs/process/test && ./basic_run_test && ./environment_test && ./execute_show_env && popd
 
+More information about the library is available from the BoostProcess.pdf file. This 
+PDF may be outdated.
