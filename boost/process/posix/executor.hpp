@@ -120,8 +120,11 @@ namespace boost { namespace process { namespace posix {
                 {
                     int pipe_fds[2] = {-1, -1};
                     
-                    ::pipe(pipe_fds);
-                    
+                    if(!::pipe(pipe_fds))
+                    {
+                        throw boost::system::system_error(boost::system::error_code(errno, boost::system::system_category()));
+                    }
+
                      m_read_end = ensure_user_fd_index(pipe_fds[0]); if( m_read_end != pipe_fds[0]) close(pipe_fds[0]);
                     m_write_end = ensure_user_fd_index(pipe_fds[1]); if(m_write_end != pipe_fds[1]) close(pipe_fds[1]);
                 }
@@ -143,8 +146,8 @@ namespace boost { namespace process { namespace posix {
             {
                 m_errno = err;
                 
-                write(m_write_end, &m_errno, sizeof(m_errno));
-                
+                ssize_t silence_compiler_warning = write(m_write_end, &m_errno, sizeof(m_errno));
+
                 close(m_write_end);
                 
                 _exit(127);    
@@ -154,7 +157,7 @@ namespace boost { namespace process { namespace posix {
             {
                 if(-1 != m_write_end) { close(m_write_end); m_write_end = -1; }
                 
-                if(read(m_read_end, &m_errno, sizeof(m_errno)))
+                if(read(m_read_end, &m_errno, sizeof(m_errno) < 0))
                 {
                     close(m_read_end);
                     
