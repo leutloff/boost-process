@@ -161,7 +161,7 @@ namespace boost { namespace process { namespace posix {
                 {
                     close(m_read_end);
                     
-                    if(m_errno) throw EXC(boost::system::error_code(m_errno, boost::system::get_system_category()));
+                    if(m_errno) throw EXC(boost::system::error_code(m_errno, boost::system::system_category()));
                 }
                 close(m_read_end);
             }

@@ -33,7 +33,7 @@ namespace boost { namespace process { namespace posix {
         
         paths(const path& exe) 
         : m_exe        (exe)
-        , m_working_dir(exe.branch_path())
+        , m_working_dir(exe.parent_path())
         , m_chars      (path_as_chars(exe.string()))
         {}
         
