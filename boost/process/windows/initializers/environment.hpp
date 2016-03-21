@@ -31,7 +31,6 @@ namespace boost { namespace process { namespace windows {
         typedef std::wstring value_type;
         typedef std::pair<name_type, value_type> namevalue_type;
         typedef boost::filesystem::path path;
-        typedef boost::filesystem::wpath wpath;
 
         mutable namevalue_type m_namevalue;
 
@@ -70,8 +69,6 @@ namespace boost { namespace process { namespace windows {
         template<typename T>               env(const T& namevalue) : m_namevalue(from(namevalue)) {}
                                            env(const std::wstring& name
                                               ,const std::wstring& value) : m_namevalue(name, value) {}
-                                           env(const std::wstring& name
-                                              ,const        wpath& p) : m_namevalue(name, p.wstring()) {}
                                            env(const std::string& name
                                               ,const std::string& value) : m_namevalue(from(name, value)) {}
                                            env(const std::string& name
@@ -139,7 +136,6 @@ namespace boost { namespace process { namespace windows {
         // multiple environment initializers should not be combined in one sequence.
         typedef initializer_combination::exclusive combination_category;
         typedef boost::filesystem::path path;
-        typedef boost::filesystem::wpath wpath;
 
         environment_type m_environment;
 
@@ -197,7 +193,7 @@ namespace boost { namespace process { namespace windows {
             wchar_t *environ = GetEnvironmentStringsW();
             if (!environ)
             {
-                boost::throw_exception(boost::system::system_error(boost::system::error_code(GetLastError(), boost::system::get_system_category()),
+                boost::throw_exception(boost::system::system_error(boost::system::error_code(GetLastError(), boost::system::system_category()),
                            "initialize_environment() failed"));
             }
             try
@@ -321,17 +317,6 @@ namespace boost { namespace process { namespace windows {
                 m_environment[wn] += L';' + p.native();
             }
         }
-        void append_var(const std::wstring& varname, const wpath& p)
-        {
-            if (0 == m_environment.count(varname))
-            {
-                m_environment[varname] = p.native();
-            }
-            else
-            {
-                m_environment[varname] += L';' + p.native();
-            }
-        }
 
         void prepend_var(const std::string& varname, const char* value)
         {
@@ -362,17 +347,6 @@ namespace boost { namespace process { namespace windows {
             else
             {
                 m_environment[wn] =  p.native() + L';' + m_environment[wn];
-            }
-        }
-        void prepend_var(const std::wstring& varname, const wpath& p)
-        {
-            if (0 == m_environment.count(varname))
-            {
-                m_environment[varname] = p.native();
-            }
-            else
-            {
-                m_environment[varname] =  p.native() + L';' + m_environment[varname];
             }
         }
 
